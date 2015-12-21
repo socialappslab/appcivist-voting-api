@@ -6,6 +6,7 @@ gem 'jbuilder', '~> 2.0' # Build JSON APIs with ease.
 gem 'pg'
 gem 'puma' # Concurrent ruby web server
 gem 'rails', '4.2.5'
+gem 'rails-api'
 gem 'sass-rails', '~> 5.0' # Use SCSS for stylesheets
 gem 'turbolinks' # Turbolinks makes following links in your web application faster.
 gem 'uglifier', '>= 1.3.0' # Use Uglifier as compressor for JavaScript assets
