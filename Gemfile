@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'apipie-rails'
 gem 'coffee-rails', '~> 4.1.0'
 gem 'foreman' # Process manager for applications with multiple components
 gem 'jbuilder', '~> 2.0' # Build JSON APIs with ease.
