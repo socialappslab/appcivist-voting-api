@@ -1,5 +1,8 @@
 class API::V0::BallotController < ActionController::API
 
-  def show
+  def registration_form
+  end
+
+  def registration
   end
 end
