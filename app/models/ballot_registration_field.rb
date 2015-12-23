@@ -12,4 +12,13 @@ class BallotRegistrationField < ActiveRecord::Base
   # Associations
   #-------------
   belongs_to :ballot
+
+
+  #----------------------------------------------------------------------------
+
+  protected
+
+  def self.permitted_params
+    [:name, :description, :expected_value]
+  end
 end

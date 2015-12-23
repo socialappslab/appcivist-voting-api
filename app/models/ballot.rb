@@ -21,6 +21,14 @@ class Ballot < ActiveRecord::Base
 
   #----------------------------------------------------------------------------
 
+  protected
+
+  def self.permitted_params
+    [:instructions, :password, :notes, :voting_system_type, :starts_at, :ends_at]
+  end
+
+  #----------------------------------------------------------------------------
+
   private
 
   # See: https://github.com/rails/rails/blob/master/activerecord/lib/active_record/secure_token.rb
