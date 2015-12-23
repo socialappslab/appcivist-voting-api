@@ -8,6 +8,7 @@ Apipie.configure do |config|
   config.api_routes              = Rails.application.routes
 
   config.default_version = "v0"
+  config.validate = false
 end
 
 
