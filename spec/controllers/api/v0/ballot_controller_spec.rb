@@ -54,6 +54,33 @@ RSpec.describe API::V0::BallotController, type: :controller do
   end
 
 
+  describe "Retrieving a ballot with its registration fields" do
+    let(:ballot) { create(:ballot) }
+
+    before(:each) do
+      create(:first_name_field, :ballot => ballot, :position => 0)
+      create(:age_field, :ballot => ballot, :position => 1)
+    end
+
+    it "returns the proper ballot" do
+      get :registration_form, :ballot_uuid => ballot.uuid
+      resp = JSON.parse(response.body)
+      expect(resp["ballot"]["uuid"]).to eq(ballot.uuid)
+    end
+
+    it "returns the proper registration fields" do
+      get :registration_form, :ballot_uuid => ballot.uuid
+      resp = JSON.parse(response.body)
+      expect(resp["ballot_registration_fields"][0]["name"]).to eq("First Name")
+      expect(resp["ballot_registration_fields"][1]["name"]).to eq("Your age")
+    end
+
+    it "returns not found if ballot was not found" do
+      get :registration_form, :ballot_uuid => "123"
+      expect(JSON.parse(response.body)["error"]).to eq("Ballot does not exist")
+    end
+
+  end
 
 
 end

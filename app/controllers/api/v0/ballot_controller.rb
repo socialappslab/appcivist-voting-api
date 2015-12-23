@@ -73,7 +73,36 @@ class API::V0::BallotController < ApplicationController
   api! "Retrieves the VotingBallot registration form along with its fields."
   param_group :ballot, ApplicationController
   error 404, "Ballot does not exist"
+  example <<-EOS
+    Response: {
+      ballot: {
+        uuid: ...,
+        password: ...,
+        instructions: ...,
+        notes: ...,
+        voting_system_type: ...,
+        starts_at: ...,
+        ends_at: ...
+      },
+      ballot_registration_fields: [{
+        name: ,
+        description: ,
+        expected_value:
+      }]
+    }
+  EOS
+
+
   def registration_form
+    @ballot = Ballot.find_by_uuid(params[:ballot_uuid])
+    if @ballot.blank?
+      render :json => {:error => "Ballot does not exist"}, :status => 404 and return
+    end
+
+    render :json => {
+      :ballot => @ballot.as_json(:except => [:id, :created_at, :updated_at]),
+      :ballot_registration_fields => @ballot.ballot_registration_fields.order("position ASC").as_json(:except => [:id, :ballot_id, :position])
+    }, :status => 200 and return
   end
 
   #----------------------------------------------------------------------------

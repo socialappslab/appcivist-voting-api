@@ -25,7 +25,7 @@ class API::V0::VoteController < ApplicationController
   api! %Q(Retrieves both the ballot identified by UUID and the corresponding vote
   for the signature (or an empty object if that vote has not been created yet))
   param_group :vote_with_signature
-  example "'ballot': {'...', 'vote': {'...'}}"
+  example "Response: { 'ballot': {'...'}, 'vote': {'...'} }"
   def show
   end
 
