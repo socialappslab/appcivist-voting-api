@@ -107,9 +107,36 @@ RSpec.describe API::V0::BallotController, type: :controller do
     it "returns correct password and signature" do
       post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => fields
       resp = JSON.parse(response.body)
-      puts "resp: #{resp.inspect}"
       expect(resp["password"]).to eq(ballot.password)
       expect(resp["signature"]).to eq( Digest::SHA1.hexdigest("dmitri27") )
+    end
+
+    it "increments Vote" do
+      expect {
+        post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => fields
+      }.to change(Vote, :count).by(1)
+    end
+
+    it "creates correct Vote attributes" do
+      post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => fields
+      v = Vote.last
+      signature = JSON.parse(response.body)["signature"]
+      expect(v.signature).to eq(signature)
+      expect(v.ballot_id).to eq(ballot.id)
+      expect(v.candidate_id).not_to eq(nil)
+      expect(v.status).to eq(Vote::Status::BALLOT)
+    end
+
+    it "increments Candidate" do
+      expect {
+        post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => fields
+      }.to change(Candidate, :count).by(1)
+    end
+
+    it "creates correct Candidate attributes" do
+      post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => fields
+      c = Candidate.last
+      expect(c.ballot_id).to eq(ballot.id)
     end
 
   end
