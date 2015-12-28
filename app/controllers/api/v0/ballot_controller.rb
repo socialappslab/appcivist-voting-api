@@ -20,7 +20,7 @@ class API::V0::BallotController < ApplicationController
   api! "Create the ballot"
 
   param :ballot, Hash, :required => true, :desc => "Ballot hash containing the attributes" do
-    param :password, String, :desc => "Password for the ballot"
+    param :password, String, :desc => "Password for the ballot", :required => true
     param :instructions, String, :desc => "Instructions for the ballot", :required => true
     param :notes, String, :desc => "Notes about this ballot", :required => true
     param :voting_system_type, Integer, :desc => "Type of voting system being used for this ballot", :required => true
