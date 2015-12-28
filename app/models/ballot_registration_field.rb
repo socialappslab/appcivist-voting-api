@@ -1,3 +1,5 @@
+require 'digest/sha1'
+
 class BallotRegistrationField < ActiveRecord::Base
   #----------------------------------------------------------------------------
   # Validations
@@ -13,12 +15,19 @@ class BallotRegistrationField < ActiveRecord::Base
   #-------------
   belongs_to :ballot
 
+  #----------------------------------------------------------------------------
+
+  def self.generate_signature_from_params(params)
+    concat = params.map {|field| field[:user_input].to_s.downcase.strip}.join("")
+    return Digest::SHA1.hexdigest(concat)
+  end
+
 
   #----------------------------------------------------------------------------
 
   protected
 
   def self.permitted_params
-    [:name, :description, :expected_value]
+    [:name, :description, :expected_value, :user_input]
   end
 end

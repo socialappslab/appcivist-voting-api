@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'digest/sha1'
 
 RSpec.describe API::V0::BallotController, type: :controller do
   render_views
@@ -54,6 +55,64 @@ RSpec.describe API::V0::BallotController, type: :controller do
   end
 
 
+  describe "Retrieving a ballot with its registration fields" do
+    let(:ballot) { create(:ballot) }
+
+    before(:each) do
+      create(:first_name_field, :ballot => ballot, :position => 0)
+      create(:age_field, :ballot => ballot, :position => 1)
+    end
+
+    it "returns the proper ballot" do
+      get :registration_form, :ballot_uuid => ballot.uuid
+      resp = JSON.parse(response.body)
+      expect(resp["ballot"]["uuid"]).to eq(ballot.uuid)
+    end
+
+    it "returns the proper registration fields" do
+      get :registration_form, :ballot_uuid => ballot.uuid
+      resp = JSON.parse(response.body)
+      expect(resp["ballot_registration_fields"][0]["name"]).to eq("First Name")
+      expect(resp["ballot_registration_fields"][1]["name"]).to eq("Your age")
+    end
+
+    it "returns not found if ballot was not found" do
+      get :registration_form, :ballot_uuid => "123"
+      expect(JSON.parse(response.body)["error"]).to eq("Ballot does not exist")
+    end
+
+  end
+
+  describe "Registering for the ballot" do
+    let!(:ballot) { create(:ballot) }
+    let(:field1) { create(:first_name_field, :ballot => ballot, :position => 0)}
+    let(:field2) { create(:age_field, :ballot => ballot, :position => 1)}
+    let(:fields) { [field1.attributes.merge(:user_input => "Dmitri"), field2.attributes.merge(:user_input => 27)] }
+
+    it "returns error when registration fields are empty" do
+      post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => []
+      expect(JSON.parse(response.body)["error"]).to eq("Registration form can't be empty")
+    end
+
+    it "returns error when name is not a string" do
+      post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => [field1.attributes.merge(:user_input => 10)]
+      expect(JSON.parse(response.body)["error"]).to eq("User input does not match the expected type")
+    end
+
+    it "returns error when name is not a string" do
+      post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => [field2.attributes.merge(:user_input => "Test")]
+      expect(JSON.parse(response.body)["error"]).to eq("User input does not match the expected type")
+    end
+
+    it "returns correct password and signature" do
+      post :registration, :ballot_uuid => ballot.uuid, :ballot_registration_fields => fields
+      resp = JSON.parse(response.body)
+      puts "resp: #{resp.inspect}"
+      expect(resp["password"]).to eq(ballot.password)
+      expect(resp["signature"]).to eq( Digest::SHA1.hexdigest("dmitri27") )
+    end
+
+  end
 
 
 end
