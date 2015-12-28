@@ -208,13 +208,6 @@ class API::V0::BallotController < ApplicationController
 
   private
 
-  def identify_ballot
-    @ballot = Ballot.find_by_uuid(params[:ballot_uuid])
-    if @ballot.blank?
-      render :json => {:error => "Ballot does not exist"}, :status => 404 and return
-    end
-  end
-
   def ballot_params
     params.require(:ballot).permit(Ballot.permitted_params)
   end

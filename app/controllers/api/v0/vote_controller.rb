@@ -1,4 +1,6 @@
 class API::V0::VoteController < ApplicationController
+  before_action :identify_ballot
+
   resource_description do
     api_version "v0"
     formats ["json"]
