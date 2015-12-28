@@ -51,4 +51,36 @@ RSpec.describe API::V0::VoteController, type: :controller do
 
   end
 
+  describe "Retrieving votes" do
+    let(:ballot)    { create(:ballot) }
+    let(:candidate) { build(:candidate, :ballot => ballot) }
+    let(:vote)      { build(:dmitri_vote, :ballot => ballot)}
+
+    before(:each) do
+      candidate.save(:validate => false)
+      vote.candidate = candidate
+      vote.save(:validate => false)
+    end
+
+    it "returns empty vote object if vote does not exist" do
+      vote = create(:vote, :ballot_id => 999, :candidate_id => 1, :signature => "test", :status => Vote::Status::DRAFT)
+      get :show, :ballot_uuid => ballot.uuid, :signature => "test"
+      expect(JSON.parse(response.body)["vote"]).to eq({})
+    end
+
+    it "returns correct Vote and Ballot instance" do
+      get :show, :ballot_uuid => ballot.uuid, :signature => vote.signature
+      vote_object   = JSON.parse(response.body)["vote"]
+      ballot_object = JSON.parse(response.body)["ballot"]
+
+      expect(vote_object["signature"]).to eq(vote.signature)
+      expect(vote_object["status"]).to eq(vote.status)
+      expect(vote_object["value"]).to eq(vote.value)
+      expect(vote_object["value_type"]).to eq(vote.value_type)
+
+      expect(ballot_object["uuid"]).to eq(ballot.uuid)
+      expect(ballot_object["voting_system_type"]).to eq(ballot.voting_system_type)
+    end
+  end
+
 end

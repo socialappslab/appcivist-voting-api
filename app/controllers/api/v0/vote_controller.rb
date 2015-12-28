@@ -73,8 +73,12 @@ class API::V0::VoteController < ApplicationController
     }
   EOS
   def show
-
-
+    @vote = @ballot.votes.find_by_signature(params[:signature])
+    if @vote.blank?
+      render :json => {:ballot => @ballot.as_json(:only => [:uuid, :voting_system_type]) , :vote => {}}
+    else
+      render :json => {:ballot => @ballot.as_json(:only => [:uuid, :voting_system_type]) , :vote => @vote.as_json(:only => [:signature, :status, :value, :value_type])}
+    end
   end
 
   #----------------------------------------------------------------------------
