@@ -21,4 +21,6 @@ FactoryGirl.define do
       expected_value "integer"
     end
   end
+
+  factory :candidate
 end
