@@ -153,7 +153,6 @@ class API::V0::BallotController < ApplicationController
 
     registration_fields = @ballot.ballot_registration_fields
     ballot_registration_fields_params[:ballot_registration_fields].each do |reg_field|
-      puts "reg_field: #{reg_field}"
       user_input = reg_field[:user_input]
 
       # Begin by finding matching registration field.

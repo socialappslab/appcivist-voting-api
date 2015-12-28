@@ -124,7 +124,7 @@ RSpec.describe API::V0::BallotController, type: :controller do
       expect(v.signature).to eq(signature)
       expect(v.ballot_id).to eq(ballot.id)
       expect(v.candidate_id).not_to eq(nil)
-      expect(v.status).to eq(Vote::Status::BALLOT)
+      expect(v.status).to eq(Vote::Status::DRAFT)
     end
 
     it "increments Candidate" do
@@ -138,7 +138,6 @@ RSpec.describe API::V0::BallotController, type: :controller do
       c = Candidate.last
       expect(c.ballot_id).to eq(ballot.id)
     end
-
   end
 
 
