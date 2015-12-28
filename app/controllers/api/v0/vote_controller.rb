@@ -14,14 +14,21 @@ class API::V0::VoteController < ApplicationController
   #----------------------------------------------------------------------------
   # POST /api/v0/ballot/:ballot_uuid/vote
 
-  api! %Q(Creates a Candidate and Vote with the signature provided by the user)
+  api! %Q(Creates a Vote with the signature provided by the user)
   error 404, "Ballot does not exist"
   error 404, "Candidate does not exist"
   error 400, "Signature can't be blank"
   param :candidate_uuid, String, :desc => "UUID of the candidate being voted on", :required => true
-  param_group :vote_with_signature
+  param :vote, Hash, :required => true, :desc => "Vote hash containing the value" do
+    param :signature, String, :desc => "Signature corresponding to the voter", :required => true
+  end
   example <<-EOS
-    Sample request: {candidate_uuid: b8da40901dbee9cd067057516a6470b64eebd348, signature: 234asfasdf8234}
+    Sample request: {
+      candidate_uuid: b8da40901dbee9cd067057516a6470b64eebd348,
+      vote: {
+        signature: 234asfasdf8234
+      }
+    }
     Sample response: {
       signature: 234asfasdf8234,
       status: "DRAFT",
@@ -38,13 +45,15 @@ class API::V0::VoteController < ApplicationController
     end
 
     # Create a vote based on the provided signature (if at all provided)
+    # TODO: It's not clear how we set the value_type. My guess is that we infer
+    # from the ballot...
     vote           = Vote.new
     vote.ballot    = @ballot
     vote.candidate = @candidate
-    vote.signature = params[:signature]
+    vote.signature = vote_params[:signature]
     vote.status    = Vote::Status::DRAFT
     if vote.save
-      render :json => vote.as_json(:only => [:signature, :status, :value, :value_type]), :status => 200 and return
+      render :json => vote.as_json(:root => true, :only => [:signature, :status, :value, :value_type]), :status => 200 and return
     else
       render :json => {:error => vote.errors.full_messages[0]}, :status => 400 and return
     end
@@ -74,11 +83,10 @@ class API::V0::VoteController < ApplicationController
   EOS
   def show
     @vote = @ballot.votes.find_by_signature(params[:signature])
-    if @vote.blank?
-      render :json => {:ballot => @ballot.as_json(:only => [:uuid, :voting_system_type]) , :vote => {}}
-    else
-      render :json => {:ballot => @ballot.as_json(:only => [:uuid, :voting_system_type]) , :vote => @vote.as_json(:only => [:signature, :status, :value, :value_type])}
-    end
+
+    vote_json = {}
+    vote_json = @vote.as_json(:only => [:signature, :status, :value, :value_type]) if @vote.present?
+    render :json => {:ballot => @ballot.as_json(:only => [:uuid, :voting_system_type]) , :vote => vote_json}, :status => 200 and return
   end
 
   #----------------------------------------------------------------------------
@@ -86,11 +94,20 @@ class API::V0::VoteController < ApplicationController
 
   api! %Q(Updates a Vote instance)
   param_group :vote_with_signature
+  param :vote, Hash, :required => true, :desc => "Vote hash containing the value" do
+    param :value, String, :desc => "Value input by user"
+  end
   error 404, "Ballot does not exist"
   error 404, "Vote does not exist"
+  error 400, "Vote instance could not be saved"
   def update
   end
 
   #----------------------------------------------------------------------------
 
+  private
+
+  def vote_params
+    params.require(:vote).permit(Vote.permitted_params)
+  end
 end

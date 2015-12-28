@@ -19,4 +19,12 @@ class Vote < ActiveRecord::Base
   #-------------
   belongs_to :candidate
   belongs_to :ballot
+
+  #----------------------------------------------------------------------------
+
+  protected
+
+  def self.permitted_params
+    [:signature, :value]
+  end
 end

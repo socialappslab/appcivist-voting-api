@@ -15,14 +15,14 @@ RSpec.describe API::V0::VoteController, type: :controller do
 
     it "increments Vote" do
       expect {
-        post :create, :ballot_uuid => ballot.uuid, :candidate_uuid => candidate.uuid, :signature => signature
+        post :create, :ballot_uuid => ballot.uuid, :candidate_uuid => candidate.uuid, :vote => {:signature => signature}
       }.to change(Vote, :count).by(1)
     end
 
     it "creates correct Vote attributes" do
-      post :create, :ballot_uuid => ballot.uuid, :candidate_uuid => candidate.uuid, :signature => signature
+      post :create, :ballot_uuid => ballot.uuid, :candidate_uuid => candidate.uuid, :vote => {:signature => signature}
       v = Vote.last
-      signature = JSON.parse(response.body)["signature"]
+      signature = JSON.parse(response.body)["vote"]["signature"]
       expect(v.signature).to eq(signature)
       expect(v.ballot_id).to eq(ballot.id)
       expect(v.candidate_id).to eq(candidate.id)
@@ -32,19 +32,19 @@ RSpec.describe API::V0::VoteController, type: :controller do
     end
 
     it "returns error if no ballot is found" do
-      post :create, :ballot_uuid => "test", :candidate_uuid => candidate.uuid, :signature => signature
+      post :create, :ballot_uuid => "test", :candidate_uuid => candidate.uuid, :vote => {:signature => signature}
       expect(response.status).to eq(404)
       expect(JSON.parse(response.body)["error"]).to eq("Ballot does not exist")
     end
 
     it "returns error if no candidate is found" do
-      post :create, :ballot_uuid => ballot.uuid, :candidate_uuid => nil, :signature => signature
+      post :create, :ballot_uuid => ballot.uuid, :candidate_uuid => nil, :vote => {:signature => signature}
       expect(response.status).to eq(404)
       expect(JSON.parse(response.body)["error"]).to eq("Candidate does not exist")
     end
 
     it "returns error if signature is missing" do
-      post :create, :ballot_uuid => ballot.uuid, :candidate_uuid => candidate.uuid, :signature => nil
+      post :create, :ballot_uuid => ballot.uuid, :candidate_uuid => candidate.uuid, :vote => {:signature => nil}
       expect(response.status).to eq(400)
       expect(JSON.parse(response.body)["error"]).to eq("Signature can't be blank")
     end
@@ -60,6 +60,12 @@ RSpec.describe API::V0::VoteController, type: :controller do
       candidate.save(:validate => false)
       vote.candidate = candidate
       vote.save(:validate => false)
+    end
+
+    it "returns error if no ballot is found" do
+      get :show, :ballot_uuid => "test", :signature => vote.signature
+      expect(response.status).to eq(404)
+      expect(JSON.parse(response.body)["error"]).to eq("Ballot does not exist")
     end
 
     it "returns empty vote object if vote does not exist" do
