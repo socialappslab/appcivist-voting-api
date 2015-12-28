@@ -1,7 +1,17 @@
 class API::V0::BallotController < ApplicationController
+  before_action :identify_ballot, :only => [:registration_form, :registration]
+
   resource_description do
     api_version "v0"
     formats ["json"]
+  end
+
+  def_param_group :ballot_registration_fields do
+    param :ballot_registration_fields, Array, :required => true, :desc => "Ballot registation fields associated with this ballot (an array of hashes)" do
+      param :name, String, :desc => "Field name (e.g. First Name)", :required => true
+      param :description, String, :desc => "Description of the field name (e.g. Enter your first name)", :required => true
+      param :expected_value, String, :desc => "Expected value of the field (e.g. String or Integer)", :required => true
+    end
   end
 
   #----------------------------------------------------------------------------
@@ -20,13 +30,21 @@ class API::V0::BallotController < ApplicationController
 
   # Note: Although we want an array of hashes, current ApiPie implementation doesn't
   # support this: https://github.com/Apipie/apipie-rails/issues/364
-  param :ballot_registration_fields, Array, :required => true, :desc => "Ballot registation fields associated with this ballot (an array of hashes)" do
-    param :name, String, :desc => "Field name (e.g. First Name)"
-    param :description, String, :desc => "Description of the field name (e.g. Enter your first name)", :required => true
-    param :expected_value, String, :desc => "Expected value of the field (e.g. String or Integer)", :required => true
-  end
+  param_group :ballot_registration_fields
   error 400, "Registration fields for ballot are missing"
   error 400, "Ballot#attribute is missing"
+  example <<-EOS
+    Sample request:
+    ballot: {
+      password: "abcdefg",
+      instructions: "Fill out your first name",
+      notes: "Notes about this ballot",
+      voting_system_type: 1,
+      starts_at: "2016-01-01 12:00",
+      ends_at: "2017-01-01 12:00"
+    }
+  EOS
+
   def create
     @ballot = Ballot.new(ballot_params)
 
@@ -74,34 +92,28 @@ class API::V0::BallotController < ApplicationController
   param_group :ballot, ApplicationController
   error 404, "Ballot does not exist"
   example <<-EOS
-    Response: {
-      ballot: {
-        uuid: ...,
-        password: ...,
-        instructions: ...,
-        notes: ...,
-        voting_system_type: ...,
-        starts_at: ...,
-        ends_at: ...
-      },
-      ballot_registration_fields: [{
-        name: ,
-        description: ,
-        expected_value:
-      }]
-    }
+    Sample response:
+      {
+        ballot: {
+          uuid: ...,
+          password: ...,
+          instructions: ...,
+          notes: ...,
+          voting_system_type: ...,
+          starts_at: ...,
+          ends_at: ...
+        },
+        ballot_registration_fields: [{
+          name: ,
+          description: ,
+          expected_value:
+        }]
+      }
   EOS
-
-
   def registration_form
-    @ballot = Ballot.find_by_uuid(params[:ballot_uuid])
-    if @ballot.blank?
-      render :json => {:error => "Ballot does not exist"}, :status => 404 and return
-    end
-
     render :json => {
       :ballot => @ballot.as_json(:except => [:id, :created_at, :updated_at]),
-      :ballot_registration_fields => @ballot.ballot_registration_fields.order("position ASC").as_json(:except => [:id, :ballot_id, :position])
+      :ballot_registration_fields => @ballot.ballot_registration_fields.as_json(:except => [:id, :ballot_id, :position])
     }, :status => 200 and return
   end
 
@@ -113,26 +125,82 @@ class API::V0::BallotController < ApplicationController
   VotingBallot and a specific generated "signature" for the voter. The
   signature will be used by the voter to retrieve their personal vote.)
   param_group :ballot, ApplicationController
+  param_group :ballot_registration_fields
   error 404, "Ballot does not exist"
+  error 400, "Registration form can't be empty"
+  error 400, "Field name could not be found"
+  error 400, "User input does not match the expected type"
   example <<-EOS
-    "vote": {
-      "password": "...",
-      "signature": "..."
+    Sample request:
+    "ballot_registration_fields": [
+      {
+        name: "First Name",
+        description: "Fill out your first name",
+        expected_value: "string",
+        user_input: "Dmitri"
+      }, ...
+    ]
+    Sample response:
+    {
+      password: "...",
+      signature: "..."
     }
   EOS
   def registration
+    if ballot_registration_fields_params[:ballot_registration_fields].blank?
+      render :json => {:error => "Registration form can't be empty"}, :status => 400 and return
+    end
+
+    registration_fields = @ballot.ballot_registration_fields
+    ballot_registration_fields_params[:ballot_registration_fields].each do |reg_field|
+      puts "reg_field: #{reg_field}"
+      user_input = reg_field[:user_input]
+
+      # Begin by finding matching registration field.
+      matching_field = registration_fields.find_by_name(reg_field[:name])
+      if matching_field.blank?
+        render :json => {:error => "Field name could not be found"}, :status => 400 and return
+      end
+
+      # TODO: Right now, we have a very manual way of comparing field types. Ideally,
+      # I'd get access to the appcivist repo so I can get the full list of accepted types
+      # the app intends to use.
+      # If we're expecting an integer, but it's a string, then let's throw an error.
+      begin
+        Float(user_input)
+        if matching_field[:expected_value].downcase == "string"
+          render :json => {:error => "User input does not match the expected type"}, :status => 400 and return
+        end
+      rescue
+        if matching_field[:expected_value].downcase == "integer"
+          render :json => {:error => "User input does not match the expected type"}, :status => 400 and return
+        end
+      end
+    end
+
+    # At this point, we know that all of the registration fields are valid. Let's generate
+    # a signature of the user's responses.
+    signature = BallotRegistrationField.generate_signature_from_params(ballot_registration_fields_params[:ballot_registration_fields])
+    render :json => {:password => @ballot.password, :signature => signature}, :status => 200 and return
   end
 
   #----------------------------------------------------------------------------
 
   private
 
+  def identify_ballot
+    @ballot = Ballot.find_by_uuid(params[:ballot_uuid])
+    if @ballot.blank?
+      render :json => {:error => "Ballot does not exist"}, :status => 404 and return
+    end
+  end
+
   def ballot_params
     params.require(:ballot).permit(Ballot.permitted_params)
   end
 
   def ballot_registration_fields_params
-    params.permit(:ballot_registration_fields => BallotRegistrationField.permitted_params.to_a)
+    params.permit(:ballot_registration_fields => BallotRegistrationField.permitted_params)
   end
 
 end

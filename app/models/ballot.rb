@@ -10,7 +10,7 @@ class Ballot < ActiveRecord::Base
   #----------------------------------------------------------------------------
   # Associations
   #-------------
-  has_many :ballot_registration_fields
+  has_many :ballot_registration_fields, -> { order("position ASC") }
   has_many :candidates
   has_many :votes
 
