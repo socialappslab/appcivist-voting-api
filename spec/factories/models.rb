@@ -18,7 +18,7 @@ FactoryGirl.define do
     factory :age_field do
       name "Your age"
       description "Enter your age"
-      expected_value "float"
+      expected_value "integer"
     end
   end
 end
