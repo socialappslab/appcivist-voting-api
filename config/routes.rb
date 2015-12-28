@@ -6,7 +6,7 @@ Rails.application.routes.draw do
         get  "registration", :to => "ballot#registration_form"
         post "registration"
 
-        resources :vote, :only => [:create, :show, :update]
+        resources :vote, :only => [:create, :show, :update], :param => :signature
       end
     end
   end

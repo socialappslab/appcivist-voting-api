@@ -1,3 +1,5 @@
+require 'digest/sha1'
+
 FactoryGirl.define do
   factory :ballot do
     password "abcdefg"
@@ -19,6 +21,15 @@ FactoryGirl.define do
       name "Your age"
       description "Enter your age"
       expected_value "integer"
+    end
+  end
+
+  factory :candidate
+
+  factory :vote do
+    factory :dmitri_vote do
+      status    Vote::Status::DRAFT
+      signature Digest::SHA1.hexdigest("dmitri27")
     end
   end
 end

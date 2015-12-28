@@ -177,43 +177,14 @@ class API::V0::BallotController < ApplicationController
       end
     end
 
-    # At this point, we know that all of the registration fields are valid. We have two
-    # things left:
-    # 1. Create a Candidate instance,
-    # 2. Generate signature based on user's responses,
-    # 3. Create a vote with this particular signature.
-    # TODO: How do we identify candidate type from ballot? There is no other way of
-    # identifying a candidate...
-    # TODO: This controller action is not idempotent, e.g. multiple requests to
-    # this endpoint WILL create multiple candidates and votes. Is this by design?
-    # TODO: Let's simply create the Candidate and worry about creating a Contribution at a later date.
-    # TODO: It may make things simpler by keeping Contribution and Candidate under
-    # the same service... It's not clear why the two are separated...
-    @candidate = Candidate.new(:ballot_id => @ballot.id)
-    @candidate.save(:validate => false)
-
-    # Create a signature and vote based on that signature.
+    # Create a signature from the registration fields.
     signature = BallotRegistrationField.generate_signature_from_params(ballot_registration_fields_params[:ballot_registration_fields])
-    vote           = Vote.new
-    vote.ballot    = @ballot
-    vote.candidate = @candidate
-    vote.signature = signature
-    vote.status    = Vote::Status::DRAFT
-    vote.save
-
     render :json => {:password => @ballot.password, :signature => signature}, :status => 200 and return
   end
 
   #----------------------------------------------------------------------------
 
   private
-
-  def identify_ballot
-    @ballot = Ballot.find_by_uuid(params[:ballot_uuid])
-    if @ballot.blank?
-      render :json => {:error => "Ballot does not exist"}, :status => 404 and return
-    end
-  end
 
   def ballot_params
     params.require(:ballot).permit(Ballot.permitted_params)
