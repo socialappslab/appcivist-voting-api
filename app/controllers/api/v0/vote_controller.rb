@@ -9,8 +9,6 @@ class API::V0::VoteController < ApplicationController
 
   def_param_group :vote_with_signature do
     param :signature, String, :desc => "Signature corresponding to the voter", :required => true
-    error 404, "Vote does not exist"
-    error 404, "Ballot does not exist"
   end
 
   #----------------------------------------------------------------------------
@@ -20,7 +18,17 @@ class API::V0::VoteController < ApplicationController
   error 404, "Ballot does not exist"
   error 404, "Candidate does not exist"
   error 400, "Signature can't be blank"
+  param :candidate_uuid, String, :desc => "UUID of the candidate being voted on", :required => true
   param_group :vote_with_signature
+  example <<-EOS
+    Sample request: {candidate_uuid: b8da40901dbee9cd067057516a6470b64eebd348, signature: 234asfasdf8234}
+    Sample response: {
+      signature: 234asfasdf8234,
+      status: "DRAFT",
+      value: "...",
+      value_type: "..."
+    }
+  EOS
   def create
     # TODO: This controller action is not idempotent, e.g. multiple requests to
     # this endpoint WILL create multiple votes. Is this by design?
@@ -43,24 +51,39 @@ class API::V0::VoteController < ApplicationController
   end
 
   #----------------------------------------------------------------------------
-  # GET /api/v0/ballot/:ballot_uuid/vote?signature=...
+  # GET /api/v0/ballot/:ballot_uuid/vote/:signature
 
   api! %Q(Retrieves both the ballot identified by UUID and the corresponding vote
   for the signature (or an empty object if that vote has not been created yet))
   param_group :vote_with_signature
-  example "Response: { 'ballot': {'...'}, 'vote': {'...'} }"
+  error 404, "Ballot does not exist"
+  example <<-EOS
+    Sample request: /api/v0/ballot/23afdsf-234234ihfv0dfa/vote/234asfasdf8234
+    Sample response: {
+      ballot: {
+        uuid: 23afdsf-234234ihfv0dfa,
+        voting_system_type: 1
+      },
+      vote: {
+        signature: 234asfasdf8234,
+        status: "DRAFT",
+        value: "...",
+        value_type: "..."
+      }
+    }
+  EOS
   def show
 
 
   end
 
   #----------------------------------------------------------------------------
-  # PUT /api/v0/ballot/:ballot_uuid/vote/:id
+  # PUT /api/v0/ballot/:ballot_uuid/vote/:signature
 
-  api! %Q(Updates a VotingBallot instance)
-  param :id, String, :desc => "ID of the corresponding vote", :required => true
-  error 404, "Vote does not exist"
+  api! %Q(Updates a Vote instance)
+  param_group :vote_with_signature
   error 404, "Ballot does not exist"
+  error 404, "Vote does not exist"
   def update
   end
 
