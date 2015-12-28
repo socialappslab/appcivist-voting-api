@@ -89,4 +89,35 @@ RSpec.describe API::V0::VoteController, type: :controller do
     end
   end
 
+
+  describe "Updating votes" do
+    let(:ballot)    { create(:ballot) }
+    let(:candidate) { build(:candidate, :ballot => ballot) }
+    let(:vote)      { build(:dmitri_vote, :ballot => ballot, :value_type => 1)}
+
+    before(:each) do
+      candidate.save(:validate => false)
+      vote.candidate = candidate
+      vote.save(:validate => false)
+    end
+
+    it "returns error if no ballot is found" do
+      get :show, :ballot_uuid => "test", :signature => vote.signature
+      expect(response.status).to eq(404)
+      expect(JSON.parse(response.body)["error"]).to eq("Ballot does not exist")
+    end
+
+    it "returns error if vote is not found" do
+      vote = create(:vote, :ballot_id => 999, :candidate_id => 1, :signature => "test", :status => Vote::Status::DRAFT)
+      put :update, :ballot_uuid => ballot.uuid, :signature => "test", :vote => {:value => ""}
+      expect(JSON.parse(response.body)["error"]).to eq("Vote does not exist")
+    end
+
+    it "updates Vote instance" do
+      put :update, :ballot_uuid => ballot.uuid, :signature => vote.signature, :vote => {:value => "test"}
+      v = Vote.last
+      expect(v.value).to eq("test")
+    end
+  end
+
 end

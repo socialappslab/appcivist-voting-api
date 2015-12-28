@@ -101,6 +101,16 @@ class API::V0::VoteController < ApplicationController
   error 404, "Vote does not exist"
   error 400, "Vote instance could not be saved"
   def update
+    @vote = @ballot.votes.find_by_signature(params[:signature])
+    if @vote.blank?
+      render :json => {:error => "Vote does not exist"}, :status => 404 and return
+    end
+
+    if @vote.update_attributes(vote_params)
+      render :json => @vote.as_json(:root => true, :only => [:signature, :status, :value, :value_type]), :status => 200 and return
+    else
+      render :json => {:error => @vote.errors.full_messages[0]}, :status => 400 and return
+    end
   end
 
   #----------------------------------------------------------------------------
