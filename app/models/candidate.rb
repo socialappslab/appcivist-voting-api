@@ -1,10 +1,15 @@
-class Vote < ActiveRecord::Base
+class Candidate < ActiveRecord::Base
+  module Types
+    EXTERNAL = 0
+    ASSEMBLY = 1
+  end
+
   #----------------------------------------------------------------------------
   # Validations
   #------------
-  validates :ballot_id,      :presence => true
-  validates :candidate_type, :presence => true
-  validates :value_type,     :presence => true
+  validates :ballot_id,         :presence => true
+  validates :candidate_type,    :presence => true
+  validates :contribution_uuid, :presence => true
 
   #----------------------------------------------------------------------------
   # Associations
