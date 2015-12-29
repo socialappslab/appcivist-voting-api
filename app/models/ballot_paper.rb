@@ -40,6 +40,7 @@ class BallotPaper < ActiveRecord::Base
   # See: https://github.com/rails/rails/blob/master/activerecord/lib/active_record/secure_token.rb
   # for why we implement it this way.
   def generate_uuid
+    return if self.uuid?
     self.uuid = SecureRandom.uuid
   end
 end

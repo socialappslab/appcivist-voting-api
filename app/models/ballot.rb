@@ -13,6 +13,7 @@ class Ballot < ActiveRecord::Base
   #-------------
   has_many :ballot_registration_fields, -> { order("position ASC") }
   has_many :ballot_papers
+  has_many :votes, :through => :ballot_papers
 
   #----------------------------------------------------------------------------
   # Callbacks
@@ -34,6 +35,7 @@ class Ballot < ActiveRecord::Base
   # See: https://github.com/rails/rails/blob/master/activerecord/lib/active_record/secure_token.rb
   # for why we implement it this way.
   def generate_uuid
+    return if self.uuid?
     self.uuid = SecureRandom.uuid
   end
 end
