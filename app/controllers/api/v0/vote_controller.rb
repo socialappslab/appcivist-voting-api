@@ -14,56 +14,52 @@ class API::V0::VoteController < ApplicationController
   #----------------------------------------------------------------------------
   # POST /api/v0/ballot/:ballot_uuid/vote
 
-  api! %Q(Creates a Vote with the signature provided by the user)
+  api! %Q(Creates a BallotPaper instance with the signature provided by the user)
   error 404, "Ballot does not exist"
-  error 404, "Candidate does not exist"
   error 400, "Signature can't be blank"
-  param :candidate_uuid, String, :desc => "UUID of the candidate being voted on", :required => true
+  # See https://github.com/docker/docker-registry/issues/10
+  # on why we're using error code 409
+  error 409, "Ballot with that signature already exists"
   param :vote, Hash, :required => true, :desc => "Vote hash containing the value" do
     param :signature, String, :desc => "Signature corresponding to the voter", :required => true
   end
   example <<-EOS
     Sample request: {
-      candidate_uuid: 0a042995-e8b3-4548-a645-debeb7044722,
       vote: {
         signature: b8da40901dbee9cd067057516a6470b64eebd348
       }
     }
     Sample response: {
-      signature: b8da40901dbee9cd067057516a6470b64eebd348,
-      status: "DRAFT",
-      value: "...",
-      value_type: "..."
+      vote : {
+        uuid: ...,
+        signature: b8da40901dbee9cd067057516a6470b64eebd348,
+        status: 0
+      }
     }
   EOS
   def create
-    # TODO: This controller action is not idempotent, e.g. multiple requests to
-    # this endpoint WILL create multiple votes. Is this by design?
-    @candidate = Candidate.find_by_uuid(params[:candidate_uuid])
-    if @candidate.blank?
-      render :json => {:error => "Candidate does not exist"}, :status => 404 and return
+    ballot_paper = BallotPaper.find_by_signature(ballot_paper_params[:signature])
+    if ballot_paper.present?
+      render :json => {:error => "Ballot with that signature already exists"}, :status => 409 and return
     end
 
-    # Create a vote based on the provided signature (if at all provided)
-    # TODO: It's not clear how we set the value_type. My guess is that we infer
-    # from the ballot...
-    vote           = Vote.new
-    vote.ballot    = @ballot
-    vote.candidate = @candidate
-    vote.signature = vote_params[:signature]
-    vote.status    = Vote::Status::DRAFT
-    if vote.save
-      render :json => vote.as_json(:root => true, :only => [:signature, :status, :value, :value_type]), :status => 200 and return
+    # Create a ballot paper based on the provided signature.
+    ballot_paper           = BallotPaper.new
+    ballot_paper.ballot    = @ballot
+    ballot_paper.signature = ballot_paper_params[:signature]
+    ballot_paper.status    = BallotPaper::Status::DRAFT
+    if ballot_paper.save
+      render :json => {:vote => ballot_paper.as_json(:only => [:uuid, :signature, :status])}, :status => 200 and return
     else
-      render :json => {:error => vote.errors.full_messages[0]}, :status => 400 and return
+      render :json => {:error => ballot_paper.errors.full_messages[0]}, :status => 400 and return
     end
   end
 
   #----------------------------------------------------------------------------
   # GET /api/v0/ballot/:ballot_uuid/vote/:signature
 
-  api! %Q(Retrieves both the ballot identified by UUID and the corresponding vote
-  for the signature (or an empty object if that vote has not been created yet))
+  api! %Q(Retrieves both the ballot identified by UUID and all candidate votes associated
+  with the signature (or an empty object if that ballot paper has not been created yet))
   param_group :vote_with_signature
   error 404, "Ballot does not exist"
   example <<-EOS
@@ -74,42 +70,42 @@ class API::V0::VoteController < ApplicationController
         voting_system_type: 0
       },
       vote: {
+        uuid: ...,
         signature: b8da40901dbee9cd067057516a6470b64eebd348,
-        status: "DRAFT",
-        value: "...",
-        value_type: "..."
+        status: 0,
+        votes: [
+          {candidate_id: ..., value: "...", value_type: "..."},
+          {candidate_id: ..., value: "...", value_type: "..."},
+          ...
+        ]
       }
     }
   EOS
   def show
-    @vote = @ballot.votes.find_by_signature(params[:signature])
-
-    vote_json = {}
-    vote_json = @vote.as_json(:only => [:signature, :status, :value, :value_type]) if @vote.present?
-    render :json => {:ballot => @ballot.as_json(:only => [:uuid, :voting_system_type]) , :vote => vote_json}, :status => 200 and return
+    @ballot_paper = @ballot.ballot_papers.find_by_signature(params[:signature])
   end
 
   #----------------------------------------------------------------------------
   # PUT /api/v0/ballot/:ballot_uuid/vote/:signature
 
-  api! %Q(Updates a Vote instance)
+  api! %Q(Updates a BallotPaper instance)
   param_group :vote_with_signature
   param :vote, Hash, :required => true, :desc => "Vote hash containing the value" do
     param :value, String, :desc => "Value input by user"
   end
   error 404, "Ballot does not exist"
-  error 404, "Vote does not exist"
-  error 400, "Vote instance could not be saved"
+  error 404, "Ballot paper does not exist"
+  error 400, "Ballot paper could not be saved"
   def update
-    @vote = @ballot.votes.find_by_signature(params[:signature])
-    if @vote.blank?
-      render :json => {:error => "Vote does not exist"}, :status => 404 and return
+    @ballot_paper = @ballot.ballot_papers.find_by_signature(params[:signature])
+    if @ballot_paper.blank?
+      render :json => {:error => "Ballot paper does not exist"}, :status => 404 and return
     end
 
-    if @vote.update_attributes(vote_params)
-      render :json => @vote.as_json(:root => true, :only => [:signature, :status, :value, :value_type]), :status => 200 and return
+    if @ballot_paper.update_attributes(ballot_paper_params)
+      render :json => @ballot_paper.as_json(:root => true, :only => [:signature, :status]), :status => 200 and return
     else
-      render :json => {:error => @vote.errors.full_messages[0]}, :status => 400 and return
+      render :json => {:error => @ballot_paper.errors.full_messages[0]}, :status => 400 and return
     end
   end
 
@@ -117,7 +113,7 @@ class API::V0::VoteController < ApplicationController
 
   private
 
-  def vote_params
-    params.require(:vote).permit(Vote.permitted_params)
+  def ballot_paper_params
+    params.require(:vote).permit(BallotPaper.permitted_params)
   end
 end

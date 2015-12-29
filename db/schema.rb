@@ -11,10 +11,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151228185428) do
+ActiveRecord::Schema.define(version: 20151229182454) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "ballot_papers", force: :cascade do |t|
+    t.integer  "ballot_id"
+    t.string   "uuid"
+    t.string   "signature"
+    t.integer  "status"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "ballot_registration_fields", force: :cascade do |t|
     t.integer "ballot_id"
@@ -51,15 +60,11 @@ ActiveRecord::Schema.define(version: 20151228185428) do
 
   create_table "votes", force: :cascade do |t|
     t.integer  "candidate_id"
-    t.integer  "ballot_id"
-    t.string   "signature"
-    t.string   "status"
+    t.integer  "ballot_paper_id"
     t.string   "value"
     t.integer  "value_type"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
-
-  add_index "votes", ["signature"], name: "index_votes_on_signature", using: :btree
 
 end

@@ -1,18 +1,24 @@
-# A ballot is an election process within an organization.
-class Ballot < ActiveRecord::Base
+# A ballot paper represents a particular user's votes on the candidates on a
+# ballot. Its real world representation is a piece of paper, hence BallotPaper.
+# See https://en.wikipedia.org/wiki/Ballot
+class BallotPaper < ActiveRecord::Base
+  module Status
+    DRAFT    = 0
+    FINISHED = 1
+  end
+
   #----------------------------------------------------------------------------
   # Validations
   #------------
-  validates :instructions,  :presence => true
-  validates :voting_system_type, :presence => true
-  validates :starts_at, :presence => true
-  validates :ends_at,   :presence => true
+  validates :ballot_id,    :presence => true
+  validates :signature,    :presence => true
+  validates :status,       :presence => true
 
   #----------------------------------------------------------------------------
   # Associations
   #-------------
-  has_many :ballot_registration_fields, -> { order("position ASC") }
-  has_many :ballot_papers
+  belongs_to :ballot
+  has_many   :votes
 
   #----------------------------------------------------------------------------
   # Callbacks
@@ -24,7 +30,7 @@ class Ballot < ActiveRecord::Base
   protected
 
   def self.permitted_params
-    [:instructions, :password, :notes, :voting_system_type, :starts_at, :ends_at]
+    [:signature, :status]
   end
 
   #----------------------------------------------------------------------------
