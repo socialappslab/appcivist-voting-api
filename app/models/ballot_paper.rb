@@ -30,7 +30,7 @@ class BallotPaper < ActiveRecord::Base
   protected
 
   def self.permitted_params
-    [:signature]
+    [:signature, :status]
   end
 
   #----------------------------------------------------------------------------

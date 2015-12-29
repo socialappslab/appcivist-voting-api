@@ -10,6 +10,11 @@ FactoryGirl.define do
     ends_at   "2017-01-01 12:00:00"
   end
 
+  factory :ballot_paper do
+    status    BallotPaper::Status::DRAFT
+    signature Digest::SHA1.hexdigest("dmitri27")
+  end
+
   factory :ballot_registration_field do
     factory :first_name_field do
       name "First Name"
@@ -25,11 +30,5 @@ FactoryGirl.define do
   end
 
   factory :candidate
-
-  factory :vote do
-    factory :dmitri_vote do
-      status    Vote::Status::DRAFT
-      signature Digest::SHA1.hexdigest("dmitri27")
-    end
-  end
+  factory :vote
 end
