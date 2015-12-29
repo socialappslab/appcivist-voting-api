@@ -43,6 +43,11 @@ describe RangeVoting do
     expect(RangeVoting.calculate_score(["9", "1", "9"])).to eq(6.33)
   end
 
+  it "returns empty if no votes are available" do
+    sorted_cands = RangeVoting.sort_candidates_by_score([])
+    expect(sorted_cands).to eq([])
+  end
+
   it "returns correct order for candidates" do
     sorted_cands = RangeVoting.sort_candidates_by_score(ballot.votes)
 
