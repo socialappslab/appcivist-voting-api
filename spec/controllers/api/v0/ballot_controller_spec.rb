@@ -112,5 +112,58 @@ RSpec.describe API::V0::BallotController, type: :controller do
     end
   end
 
+  describe "Getting results for the ballot" do
+    let!(:ballot) { create(:ballot) }
+
+    before(:each) do
+      # Crate 3 candidates.
+      3.times do |index|
+        build(:candidate, :ballot => ballot, :candidate_type => 0, :uuid => "index-#{index}").save(:validate => false)
+      end
+
+      # Create 5 voters.
+      5.times do |index|
+        bp = create(:ballot_paper, :ballot => ballot, :signature => "index-#{index}", :status => BallotPaper::Status::DRAFT)
+      end
+
+      # Create 5 votes for 1st candidate (expected loser)
+      c = Candidate.find_by_uuid("index-0")
+      BallotPaper.find_each do |bp|
+        create(:vote, :candidate => c, :ballot_paper => bp, :value => 1)
+      end
+
+      # Create 3 votes for 2nd candidate (expected winner)
+      c = Candidate.find_by_uuid("index-1")
+      BallotPaper.limit(3).to_a.each do |bp|
+        create(:vote, :candidate => c, :ballot_paper => bp, :value => 9)
+      end
+
+      # Create 5 votes for 3rd candidate (expected second place)
+      c = Candidate.find_by_uuid("index-2")
+      BallotPaper.find_each do |bp|
+        create(:vote, :candidate => c, :ballot_paper => bp, :value => 5)
+      end
+    end
+
+    it "returns correct ballot status" do
+      get :results, :ballot_uuid => ballot.uuid
+      expect(JSON.parse(response.body)["ballot"]["finished"]).to eq(false)
+    end
+
+    it "returns correct results" do
+      get :results, :ballot_uuid => ballot.uuid
+
+      sorted_cands = JSON.parse(response.body)["results"]
+      c = Candidate.find_by_uuid("index-1")
+      expect(sorted_cands[0]["candidate_id"]).to eq(c.id)
+
+      c = Candidate.find_by_uuid("index-2")
+      expect(sorted_cands[1]["candidate_id"]).to eq(c.id)
+
+      c = Candidate.find_by_uuid("index-0")
+      expect(sorted_cands[2]["candidate_id"]).to eq(c.id)
+    end
+  end
+
 
 end

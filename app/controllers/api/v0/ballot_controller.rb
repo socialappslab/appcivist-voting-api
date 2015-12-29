@@ -1,5 +1,6 @@
 class API::V0::BallotController < ApplicationController
-  before_action :identify_ballot, :only => [:registration_form, :registration]
+  include RangeVoting
+  before_action :identify_ballot, :except => [:create]
 
   resource_description do
     api_version "v0"
@@ -44,7 +45,6 @@ class API::V0::BallotController < ApplicationController
       ends_at: "2017-01-01 12:00"
     }
   EOS
-
   def create
     @ballot = Ballot.new(ballot_params)
 
@@ -83,6 +83,32 @@ class API::V0::BallotController < ApplicationController
     end
 
     render :json => {}, :status => 200 and return
+  end
+
+  #----------------------------------------------------------------------------
+  # GET /api/v0/ballot/:uuid/results
+
+  api! "Retrieves the results for Ballot (may not necessarily be finished)"
+  param_group :ballot, ApplicationController
+  error 404, "Ballot does not exist"
+  example <<-EOS
+    Sample response: {
+      ballot: {
+        uuid: 52b59fbd-4b93-4227-b974-e1ba4a8c678d,
+        finished: false
+      }
+      results: [{
+        candidate_id: ...,
+        values: [...],
+        score: ...,
+      }, ...]
+    }
+  EOS
+  def results
+    render :json => {
+      :ballot  => {:uuid => @ballot.uuid, :finished => @ballot.finished?},
+      :results => RangeVoting.sort_candidates_by_score(@ballot.votes)
+    }, :status => 200 and return
   end
 
   #----------------------------------------------------------------------------

@@ -22,6 +22,16 @@ class Ballot < ActiveRecord::Base
 
   #----------------------------------------------------------------------------
 
+  # A ballot is said to be finished if none of the ballot papers are in draft mode.
+  # TODO: This definition does not take into account ballot papers that were created
+  # but not worked on. In other words, a ballot's state depends on all voters doing
+  # their part... not a good way to define finished state...
+  def finished?
+    self.ballot_papers.where(:status => BallotPaper::Status::DRAFT).count == 0
+  end
+
+  #----------------------------------------------------------------------------
+
   protected
 
   def self.permitted_params
