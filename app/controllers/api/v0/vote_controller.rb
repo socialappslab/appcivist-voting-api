@@ -24,13 +24,13 @@ class API::V0::VoteController < ApplicationController
   end
   example <<-EOS
     Sample request: {
-      candidate_uuid: b8da40901dbee9cd067057516a6470b64eebd348,
+      candidate_uuid: 0a042995-e8b3-4548-a645-debeb7044722,
       vote: {
-        signature: 234asfasdf8234
+        signature: b8da40901dbee9cd067057516a6470b64eebd348
       }
     }
     Sample response: {
-      signature: 234asfasdf8234,
+      signature: b8da40901dbee9cd067057516a6470b64eebd348,
       status: "DRAFT",
       value: "...",
       value_type: "..."
@@ -67,14 +67,14 @@ class API::V0::VoteController < ApplicationController
   param_group :vote_with_signature
   error 404, "Ballot does not exist"
   example <<-EOS
-    Sample request: /api/v0/ballot/23afdsf-234234ihfv0dfa/vote/234asfasdf8234
+    Sample request: /api/v0/ballot/52b59fbd-4b93-4227-b974-e1ba4a8c678d/vote/b8da40901dbee9cd067057516a6470b64eebd348
     Sample response: {
       ballot: {
-        uuid: 23afdsf-234234ihfv0dfa,
-        voting_system_type: 1
+        uuid: 52b59fbd-4b93-4227-b974-e1ba4a8c678d,
+        voting_system_type: 0
       },
       vote: {
-        signature: 234asfasdf8234,
+        signature: b8da40901dbee9cd067057516a6470b64eebd348,
         status: "DRAFT",
         value: "...",
         value_type: "..."

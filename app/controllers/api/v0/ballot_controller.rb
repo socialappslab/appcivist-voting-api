@@ -95,7 +95,7 @@ class API::V0::BallotController < ApplicationController
     Sample response:
       {
         ballot: {
-          uuid: ...,
+          uuid: 52b59fbd-4b93-4227-b974-e1ba4a8c678d,
           password: ...,
           instructions: ...,
           notes: ...,
