@@ -61,10 +61,10 @@ RSpec.describe API::V0::VoteController, type: :controller do
       expect(JSON.parse(response.body)["error"]).to eq("Ballot does not exist")
     end
 
-    it "returns empty object if ballot paper does not exist" do
+    it "returns error if ballot paper does not exist" do
       new_ballot = create(:ballot)
       get :show, :ballot_uuid => new_ballot.uuid, :signature => "test", :format => :json
-      expect(JSON.parse(response.body)["vote"]).to eq({})
+      expect(JSON.parse(response.body)["error"]).to eq("There are no votes under this signature.")
     end
 
     it "returns correct Ballot instance" do
@@ -94,19 +94,52 @@ RSpec.describe API::V0::VoteController, type: :controller do
     let(:ballot_paper) { create(:ballot_paper, :ballot => ballot)}
 
     it "returns error if no ballot is found" do
-      get :show, :ballot_uuid => "test", :signature => ballot_paper.signature
+      put :update, :ballot_uuid => "test", :signature => ballot_paper.signature
       expect(response.status).to eq(404)
       expect(JSON.parse(response.body)["error"]).to eq("Ballot does not exist")
     end
 
     it "returns error if ballot paper is not found" do
       new_ballot = create(:ballot)
-      put :update, :ballot_uuid => new_ballot.uuid, :signature => "test", :vote => {:value => ""}
+      put :update, :ballot_uuid => new_ballot.uuid, :signature => "test", :vote => {:votes => [{:candidate_id => 1, :user_input => "100"}, {:candidate_id => 2, :user_input => "60"}]}
+      expect(JSON.parse(response.body)["error"]).to eq("Ballot paper does not exist")
+    end
+
+    it "changes Vote count by 2" do
+      expect {
+        put :update, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:votes => [{:candidate_id => 1, :user_input => "100"}, {:candidate_id => 2, :user_input => "60"}]}
+      }.to change(Vote, :count).by(2)
+    end
+
+    it "correctly assigns attributes to BallotPaper" do
+      put :update, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:votes => [{:candidate_id => 1, :user_input => "100"}, {:candidate_id => 2, :user_input => "60"}]}
+      bp = BallotPaper.last
+      vote1 = bp.votes[0]
+      expect(vote1.value).to eq("100")
+      vote2 = bp.votes[1]
+      expect(vote2.value).to eq("60")
+    end
+  end
+
+
+  describe "Changing status" do
+    let(:ballot)       { create(:ballot) }
+    let(:ballot_paper) { create(:ballot_paper, :ballot => ballot)}
+
+    it "returns error if no ballot is found" do
+      put :update, :ballot_uuid => "test", :signature => ballot_paper.signature, :vote => {:status => 1}
+      expect(response.status).to eq(404)
+      expect(JSON.parse(response.body)["error"]).to eq("Ballot does not exist")
+    end
+
+    it "returns error if ballot paper is not found" do
+      new_ballot = create(:ballot)
+      put :update, :ballot_uuid => new_ballot.uuid, :signature => "test", :vote => {:status => 1}
       expect(JSON.parse(response.body)["error"]).to eq("Ballot paper does not exist")
     end
 
     it "updates BallotPaper status" do
-      put :update, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:status => 1}
+      put :complete, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:status => 1}
       expect(BallotPaper.last.status).to eq(1)
     end
   end

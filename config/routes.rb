@@ -7,7 +7,9 @@ Rails.application.routes.draw do
         post "registration"
         get "results"
 
-        resources :vote, :only => [:create, :show, :update], :param => :signature
+        resources :vote, :only => [:create, :show, :update], :param => :signature do
+          put :complete, :on => :member
+        end
       end
     end
   end

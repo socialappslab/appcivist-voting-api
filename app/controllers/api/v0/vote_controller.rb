@@ -68,7 +68,13 @@ class API::V0::VoteController < ApplicationController
     Sample response: {
       ballot: {
         uuid: 52b59fbd-4b93-4227-b974-e1ba4a8c678d,
-        voting_system_type: 0
+        voting_system_type: 'range',
+        instructions: '...',
+        notes: '...',
+        ballot_configurations: [
+          {key: 'minimum', value: 0},
+          {key: 'maximum', value: 100}
+        ]
       },
       vote: {
         uuid: ...,
@@ -105,12 +111,59 @@ class API::V0::VoteController < ApplicationController
   error 404, "Ballot does not exist"
   error 404, "Ballot paper does not exist"
   error 400, "Ballot paper could not be saved"
+  example <<-EOS
+    Sample request: {
+      vote: {
+        votes: [
+          {candidate_id: ..., user_input: "..."},
+          {candidate_id: ..., user_input: "..."}
+        ]
+      }
+  EOS
   def update
     @ballot_paper = @ballot.ballot_papers.find_by_signature(params[:signature])
     if @ballot_paper.blank?
       render :json => {:error => "Ballot paper does not exist"}, :status => 404 and return
     end
 
+    params[:vote][:votes].each do |v|
+      if v[:candidate_id].blank?
+        render :json => {:error => "Candidate ID could not be identified!"}, :status => 400 and return
+      end
+
+      next unless v[:user_input].present?
+
+      vote = @ballot_paper.votes.find_by_candidate_id(v[:candidate_id])
+      if vote.blank?
+        vote = Vote.new(:ballot_paper_id => @ballot_paper.id, :candidate_id => v[:candidate_id])
+      end
+
+      vote.value = v[:user_input]
+      vote.save
+    end
+
+    if @ballot_paper.update_attributes(ballot_paper_params)
+      render :json => @ballot_paper.as_json(:root => true, :only => [:signature, :status]), :status => 200 and return
+    else
+      render :json => {:error => @ballot_paper.errors.full_messages[0]}, :status => 400 and return
+    end
+  end
+
+  #----------------------------------------------------------------------------
+  # PUT /api/v0/ballot/:ballot_uuid/vote/:signature/complete
+
+  api! %Q(Changes the status of a BallotPaper instance to FINISHED)
+  param_group :vote_with_signature
+  error 404, "Ballot does not exist"
+  error 404, "Ballot paper does not exist"
+  error 400, "Ballot paper could not be saved"
+  def complete
+    @ballot_paper = @ballot.ballot_papers.find_by_signature(params[:signature])
+    if @ballot_paper.blank?
+      render :json => {:error => "Ballot paper does not exist"}, :status => 404 and return
+    end
+
+    @ballot_paper.status = BallotPaper::Status::FINISHED
     if @ballot_paper.update_attributes(ballot_paper_params)
       render :json => @ballot_paper.as_json(:root => true, :only => [:signature, :status]), :status => 200 and return
     else
