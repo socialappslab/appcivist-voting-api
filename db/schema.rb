@@ -45,7 +45,7 @@ ActiveRecord::Schema.define(version: 20160109005441) do
     t.string   "password"
     t.text     "instructions"
     t.text     "notes"
-    t.integer  "voting_system_type"
+    t.string   "voting_system_type"
     t.datetime "starts_at"
     t.datetime "ends_at"
     t.datetime "created_at"
