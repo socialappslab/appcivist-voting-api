@@ -18,6 +18,7 @@ class Ballot < ActiveRecord::Base
   has_many :ballot_registration_fields, -> { order("position ASC") }
   has_many :ballot_papers
   has_many :votes, :through => :ballot_papers
+  has_many :ballot_configurations, -> { order("position ASC")}
 
   #----------------------------------------------------------------------------
   # Callbacks

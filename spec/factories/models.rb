@@ -31,4 +31,5 @@ FactoryGirl.define do
 
   factory :candidate
   factory :vote
+  factory :ballot_configuration
 end
