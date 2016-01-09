@@ -59,9 +59,10 @@ class API::V0::VoteController < ApplicationController
   # GET /api/v0/ballot/:ballot_uuid/vote/:signature
 
   api! %Q(Retrieves both the ballot identified by UUID and all candidate votes associated
-  with the signature (or an empty object if that ballot paper has not been created yet))
+  with the signature)
   param_group :vote_with_signature
   error 404, "Ballot does not exist"
+  error 404, "There are no votes under this signature."
   example <<-EOS
     Sample request: /api/v0/ballot/52b59fbd-4b93-4227-b974-e1ba4a8c678d/vote/b8da40901dbee9cd067057516a6470b64eebd348
     Sample response: {
@@ -82,7 +83,15 @@ class API::V0::VoteController < ApplicationController
     }
   EOS
   def show
+    if params[:signature].blank?
+      render :json => {:error => "You need to enter your signature!"}, :status => 400 and return
+    end
+
     @ballot_paper = @ballot.ballot_papers.find_by_signature(params[:signature])
+    if @ballot_paper.blank?
+      render :json => {:error => "There are no votes under this signature."}, :status => 400 and return
+    end
+
   end
 
   #----------------------------------------------------------------------------
