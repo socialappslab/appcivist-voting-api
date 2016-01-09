@@ -115,8 +115,8 @@ class API::V0::VoteController < ApplicationController
     Sample request: {
       vote: {
         votes: [
-          {candidate_id: ..., user_input: "..."},
-          {candidate_id: ..., user_input: "..."}
+          {uuid: ..., user_input: "..."},
+          {uuid: ..., user_input: "..."}
         ]
       }
   EOS
@@ -127,18 +127,18 @@ class API::V0::VoteController < ApplicationController
     end
 
     params[:vote][:votes].each do |v|
-      if v[:candidate_id].blank?
+      if v[:uuid].blank?
         render :json => {:error => "Candidate ID could not be identified!"}, :status => 400 and return
       end
 
-      next unless v[:user_input].present?
+      next unless v[:value].present?
 
-      vote = @ballot_paper.votes.find_by_candidate_id(v[:candidate_id])
+      vote = @ballot_paper.votes.find_by_candidate_id(v[:uuid])
       if vote.blank?
-        vote = Vote.new(:ballot_paper_id => @ballot_paper.id, :candidate_id => v[:candidate_id])
+        vote = Vote.new(:ballot_paper_id => @ballot_paper.id, :candidate_id => v[:uuid])
       end
 
-      vote.value = v[:user_input]
+      vote.value = v[:value]
       vote.save
     end
 
