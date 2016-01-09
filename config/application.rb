@@ -25,8 +25,8 @@ module AppcivistVotingApi
 
     config.middleware.insert_before 0, "Rack::Cors" do
       allow do
-        origins "0.0.0.0:8000", "appcivist.littlemacondo.com"
-        resource '*', :headers => :any, :methods => [:get, :post, :options]
+        origins "0.0.0.0:8000", "localhost:8000", "appcivist.littlemacondo.com"
+        resource '*', :headers => :any, :methods => [:get, :put, :post, :options]
       end
     end
   end
