@@ -83,6 +83,22 @@ RSpec.describe API::V0::BallotController, type: :controller do
 
   end
 
+  describe "Retrieving a ballot with its configuration fields" do
+    let(:ballot) { create(:ballot) }
+
+    before(:each) do
+      create(:ballot_configuration, :ballot => ballot, :key => "minimum range", :value => 0, :position => 0)
+      create(:ballot_configuration, :ballot => ballot, :key => "maximum range", :value => 100, :position => 1)
+    end
+
+    it "returns the proper registration fields" do
+      get :registration_form, :ballot_uuid => ballot.uuid
+      resp = JSON.parse(response.body)
+      expect(resp["ballot_configurations"][0]["key"]).to eq("minimum range")
+      expect(resp["ballot_configurations"][1]["key"]).to eq("maximum range")
+    end
+  end
+
   describe "Registering for the ballot" do
     let!(:ballot) { create(:ballot) }
     let(:field1) { create(:first_name_field, :ballot => ballot, :position => 0)}

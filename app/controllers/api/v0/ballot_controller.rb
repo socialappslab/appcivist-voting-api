@@ -114,7 +114,7 @@ class API::V0::BallotController < ApplicationController
   #----------------------------------------------------------------------------
   # GET /api/v0/ballot/:ballot_uuid/registration
 
-  api! "Retrieves the VotingBallot registration form along with its fields."
+  api! "Retrieves the VotingBallot registration form along with its fields and configuration."
   param_group :ballot, ApplicationController
   error 404, "Ballot does not exist"
   example <<-EOS
@@ -129,6 +129,10 @@ class API::V0::BallotController < ApplicationController
           starts_at: ...,
           ends_at: ...
         },
+        ballot_configurations: [{
+          key: ,
+          value:
+        }]
         ballot_registration_fields: [{
           name: ,
           description: ,
@@ -139,6 +143,7 @@ class API::V0::BallotController < ApplicationController
   def registration_form
     render :json => {
       :ballot => @ballot.as_json(:except => [:id, :created_at, :updated_at]),
+      :ballot_configurations => @ballot.ballot_configurations.as_json(:only => [:key, :value]),
       :ballot_registration_fields => @ballot.ballot_registration_fields.as_json(:except => [:ballot_id, :position])
     }, :status => 200 and return
   end
