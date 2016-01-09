@@ -8,6 +8,7 @@ gem 'pg'
 gem 'puma' # Concurrent ruby web server
 gem 'rails', '4.2.5'
 gem 'rails-api'
+gem 'rack-cors', :require => 'rack/cors'
 gem 'sass-rails', '~> 5.0' # Use SCSS for stylesheets
 gem 'turbolinks' # Turbolinks makes following links in your web application faster.
 gem 'uglifier', '>= 1.3.0' # Use Uglifier as compressor for JavaScript assets
