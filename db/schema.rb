@@ -11,10 +11,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151229182454) do
+ActiveRecord::Schema.define(version: 20160109005441) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "ballot_configurations", force: :cascade do |t|
+    t.integer "ballot_id"
+    t.string  "rule"
+    t.text    "description"
+    t.integer "position"
+  end
 
   create_table "ballot_papers", force: :cascade do |t|
     t.integer  "ballot_id"
@@ -38,7 +45,7 @@ ActiveRecord::Schema.define(version: 20151229182454) do
     t.string   "password"
     t.text     "instructions"
     t.text     "notes"
-    t.integer  "voting_system_type"
+    t.string   "voting_system_type"
     t.datetime "starts_at"
     t.datetime "ends_at"
     t.datetime "created_at"

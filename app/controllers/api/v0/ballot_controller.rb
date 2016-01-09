@@ -139,7 +139,7 @@ class API::V0::BallotController < ApplicationController
   def registration_form
     render :json => {
       :ballot => @ballot.as_json(:except => [:id, :created_at, :updated_at]),
-      :ballot_registration_fields => @ballot.ballot_registration_fields.as_json(:except => [:id, :ballot_id, :position])
+      :ballot_registration_fields => @ballot.ballot_registration_fields.as_json(:except => [:ballot_id, :position])
     }, :status => 200 and return
   end
 

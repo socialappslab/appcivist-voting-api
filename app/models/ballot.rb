@@ -8,6 +8,10 @@ class Ballot < ActiveRecord::Base
   validates :starts_at, :presence => true
   validates :ends_at,   :presence => true
 
+  module VotingTypes
+    RANGE = "range"
+  end
+
   #----------------------------------------------------------------------------
   # Associations
   #-------------
