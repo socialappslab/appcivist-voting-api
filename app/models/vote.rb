@@ -4,7 +4,6 @@ class Vote < ActiveRecord::Base
   #------------
   validates :candidate_id,    :presence => true
   validates :ballot_paper_id, :presence => true
-  validates :value,           :presence => true, :on => :update
   # TODO: Deprecate this as this should be fetched from the ballot.
   # validates :value_type,      :presence => true, :on => :update
 

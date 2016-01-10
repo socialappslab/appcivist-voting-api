@@ -101,23 +101,28 @@ RSpec.describe API::V0::VoteController, type: :controller do
 
     it "returns error if ballot paper is not found" do
       new_ballot = create(:ballot)
-      put :update, :ballot_uuid => new_ballot.uuid, :signature => "test", :vote => {:votes => [{:candidate_id => 1, :user_input => "100"}, {:candidate_id => 2, :user_input => "60"}]}
+      put :update, :ballot_uuid => new_ballot.uuid, :signature => "test", :vote => {:votes => [{:uuid => 1, :value => "100"}, {:uuid => 2, :value => "60"}]}
       expect(JSON.parse(response.body)["error"]).to eq("Ballot paper does not exist")
     end
 
     it "changes Vote count by 2" do
       expect {
-        put :update, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:votes => [{:candidate_id => 1, :user_input => "100"}, {:candidate_id => 2, :user_input => "60"}]}
+        put :update, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:votes => [{:uuid => 1, :value => "100"}, {:uuid => 2, :value => "60"}]}
       }.to change(Vote, :count).by(2)
     end
 
     it "correctly assigns attributes to BallotPaper" do
-      put :update, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:votes => [{:candidate_id => 1, :user_input => "100"}, {:candidate_id => 2, :user_input => "60"}]}
+      put :update, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:votes => [{:uuid => 1, :value => "100"}, {:uuid => 2, :value => "60"}]}
       bp = BallotPaper.last
       vote1 = bp.votes[0]
       expect(vote1.value).to eq("100")
       vote2 = bp.votes[1]
       expect(vote2.value).to eq("60")
+    end
+
+    it "allows to undo a vote" do
+      put :update, :ballot_uuid => ballot.uuid, :signature => ballot_paper.signature, :vote => {:votes => [{:uuid => 1, :value => ""}]}
+      expect(Vote.last.value).to eq(nil)
     end
   end
 

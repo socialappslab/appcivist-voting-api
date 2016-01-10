@@ -131,14 +131,12 @@ class API::V0::VoteController < ApplicationController
         render :json => {:error => "Candidate ID could not be identified!"}, :status => 400 and return
       end
 
-      next unless v[:value].present?
-
       vote = @ballot_paper.votes.find_by_candidate_id(v[:uuid])
       if vote.blank?
         vote = Vote.new(:ballot_paper_id => @ballot_paper.id, :candidate_id => v[:uuid])
       end
 
-      vote.value = v[:value]
+      vote.value = v[:value].presence
       vote.save
     end
 
