@@ -2,6 +2,7 @@
 # ballot. Its real world representation is a piece of paper, hence BallotPaper.
 # See https://en.wikipedia.org/wiki/Ballot
 class BallotPaper < ActiveRecord::Base
+  self.table_name='ballot_paper'
   module Status
     DRAFT    = 0
     FINISHED = 1

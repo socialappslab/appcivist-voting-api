@@ -1,4 +1,5 @@
 class Candidate < ActiveRecord::Base
+  self.table_name='candidate'
   module Types
     EXTERNAL = 0
     ASSEMBLY = 1

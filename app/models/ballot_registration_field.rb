@@ -1,6 +1,7 @@
 require 'digest/sha1'
 
 class BallotRegistrationField < ActiveRecord::Base
+  self.table_name='ballot_registration_field'
   #----------------------------------------------------------------------------
   # Validations
   #------------

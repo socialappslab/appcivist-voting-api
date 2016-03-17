@@ -1,5 +1,6 @@
 # A ballot is an election process within an organization.
 class Ballot < ActiveRecord::Base
+  self.table_name='ballot'
   #----------------------------------------------------------------------------
   # Validations
   #------------

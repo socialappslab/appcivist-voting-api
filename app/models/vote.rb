@@ -1,4 +1,5 @@
 class Vote < ActiveRecord::Base
+  self.table_name='vote'
   #----------------------------------------------------------------------------
   # Validations
   #------------

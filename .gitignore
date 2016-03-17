@@ -56,3 +56,5 @@ bower.json
 # Ignore pow environment settings
 .powenv
 >>>>>>> 17c99c65bba517cff681d93535d1a9d01ecca66c
+.buildpath
+.project
