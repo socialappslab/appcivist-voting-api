@@ -170,6 +170,11 @@ class API::V0::VoteController < ApplicationController
   end
 
   #----------------------------------------------------------------------------
+  # TODO PUT /api/v0/ballot/:ballot_uuid/vote/:signature/candidate/:uuid
+  # 1. Find the specific candidate in list of votes of the ballot paper
+  # 2. Update vote value using the body of the request
+ 
+  #----------------------------------------------------------------------------
 
   private
 

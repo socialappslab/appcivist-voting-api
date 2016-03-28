@@ -1,5 +1,6 @@
 class API::V0::BallotController < ApplicationController
   include RangeVoting
+  include PluralityVoting
   before_action :identify_ballot, :except => [:create]
 
   resource_description do
@@ -88,6 +89,7 @@ class API::V0::BallotController < ApplicationController
   #----------------------------------------------------------------------------
   # GET /api/v0/ballot/:uuid/results
 
+  # TODO: Implement module Plurality Voting and calculate return Number of YES - Number of NO
   api! "Retrieves the results for Ballot (may not necessarily be finished)"
   param_group :ballot, ApplicationController
   error 404, "Ballot does not exist"
@@ -107,7 +109,9 @@ class API::V0::BallotController < ApplicationController
   def results
     render :json => {
       :ballot  => {:uuid => @ballot.uuid, :finished => @ballot.finished?},
-      :results => RangeVoting.sort_candidates_by_score(@ballot.votes)
+      :results => @ballot.voting_system_type == "PLURALITY" ? 
+          PluralityVoting.sort_candidates_by_score(@ballot.votes) : 
+          RangeVoting.sort_candidates_by_score(@ballot.votes)
     }, :status => 200 and return
   end
 
