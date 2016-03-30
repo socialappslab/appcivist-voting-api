@@ -107,11 +107,19 @@ class API::V0::BallotController < ApplicationController
     }
   EOS
   def results
+    results = []
+    results = @ballot.voting_system_type == "PLURALITY" ?    
+      PluralityVoting.sort_candidates_by_score(@ballot.votes) : 
+      RangeVoting.sort_candidates_by_score(@ballot.votes)
+    indexedResults = Hash.new
+    for result in results
+      indexedResults[result[:contribution_uuid]] = result
+    end
+      
     render :json => {
       :ballot  => {:uuid => @ballot.uuid, :finished => @ballot.finished?},
-      :results => @ballot.voting_system_type == "PLURALITY" ? 
-          PluralityVoting.sort_candidates_by_score(@ballot.votes) : 
-          RangeVoting.sort_candidates_by_score(@ballot.votes)
+      :results => results, 
+      :index => indexedResults
     }, :status => 200 and return
   end
 
