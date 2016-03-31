@@ -112,8 +112,11 @@ class API::V0::BallotController < ApplicationController
       PluralityVoting.sort_candidates_by_score(@ballot.votes) : 
       RangeVoting.sort_candidates_by_score(@ballot.votes)
     indexedResults = Hash.new
+
+    i = 0
     for result in results
-      indexedResults[result[:contribution_uuid]] = result
+      indexedResults[result[:contribution_uuid]] = {:vote => result, :position => i}
+      i += 1
     end
       
     render :json => {
