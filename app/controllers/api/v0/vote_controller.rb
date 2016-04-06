@@ -97,7 +97,6 @@ class API::V0::VoteController < ApplicationController
     if @ballot_paper.blank?
       render :json => {:error => "There are no votes under this signature."}, :status => 400 and return
     end
-
   end
 
   #----------------------------------------------------------------------------
