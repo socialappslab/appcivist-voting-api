@@ -44,6 +44,8 @@ class API::V0::VoteController < ApplicationController
     end
 
     # Create a ballot paper based on the provided signature.
+    puts @ballot.id
+    
     ballot_paper           = BallotPaper.new
     ballot_paper.ballot    = @ballot
     ballot_paper.signature = ballot_paper_params[:signature]
@@ -126,13 +128,13 @@ class API::V0::VoteController < ApplicationController
     end
 
     params[:vote][:votes].each do |v|
-      if v[:uuid].blank?
+      if v[:candidate_id].blank?
         render :json => {:error => "Candidate ID could not be identified!"}, :status => 400 and return
       end
 
-      vote = @ballot_paper.votes.find_by_candidate_id(v[:uuid])
+      vote = @ballot_paper.votes.find_by_candidate_id(v[:candidate_id])
       if vote.blank?
-        vote = Vote.new(:ballot_paper_id => @ballot_paper.id, :candidate_id => v[:uuid])
+        vote = Vote.new(:ballot_paper_id => @ballot_paper.id, :candidate_id => v[:candidate_id])
       end
 
       vote.value = v[:value].presence
