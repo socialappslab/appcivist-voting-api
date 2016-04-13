@@ -38,7 +38,7 @@ class API::V0::VoteController < ApplicationController
     }
   EOS
   def create
-    ballot_paper = BallotPaper.find_by_signature(ballot_paper_params[:signature])
+    ballot_paper = BallotPaper.find_by_signature_and_ballot_id(ballot_paper_params[:signature], @ballot.id)
     if ballot_paper.present?
       render :json => {:error => "Ballot with that signature already exists"}, :status => 409 and return
     end
