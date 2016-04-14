@@ -171,10 +171,53 @@ class API::V0::VoteController < ApplicationController
   end
 
   #----------------------------------------------------------------------------
-  # TODO PUT /api/v0/ballot/:ballot_uuid/vote/:signature/candidate/:uuid
+  # PUT /api/v0/ballot/:ballot_uuid/vote/:signature/single
   # 1. Find the specific candidate in list of votes of the ballot paper
   # 2. Update vote value using the body of the request
- 
+  api! %Q(Changes the value of a specific vote in a ballot paper)
+  param :vote, Hash, :required => true, :desc => "Vote hash containing the candidate id and the vote value" do
+    param :candidate_id, Integer, :desc => "ID of the candidate whose vote we are updating", :required => true
+    param :value, String, :desc => "Instructions for the ballot", :required => true
+  end
+  param_group :vote_with_signature
+  error 404, "Ballot does not exist"
+  error 404, "Ballot paper does not exist"
+  error 404, "Candidate does not exist"
+  error 400, "Ballot paper could not be saved"
+  example <<-EOS
+    Sample request:
+    {
+      "candidate_id": 1,
+      "value": "BLOCK"
+    }
+  EOS
+  def single
+    @ballot_paper = @ballot.ballot_papers.find_by_signature_and_ballot_id(params[:signature], @ballot.id)
+    if @ballot_paper.blank?
+      render :json => {:error => "Ballot paper does not exist"}, :status => 404 and return
+    end
+
+    @candidate = @ballot.candidates.find_by_id(params[:candidate_id])  
+    if @candidate.blank?
+      render :json => {:error => "Candidate does not exist"}, :status => 404 and return
+    end
+    
+    @vote = @ballot_paper.votes.find_by_candidate_id(params[:candidate_id])
+    if @vote.blank?
+      @vote = Vote.new(:ballot_paper_id => @ballot_paper.id, :candidate_id => params[:candidate_id])
+      @vote.value = params[:value].presence
+      @vote.save
+    end
+    @vote.value = params[:value].presence
+      
+    if @vote.save
+      render :json => @vote.as_json(:root => true), :status => 200 and return
+    else
+      render :json => {:error => @vote.errors.full_messages[0]}, :status => 400 and return
+    end
+  end
+
+  
   #----------------------------------------------------------------------------
 
   private

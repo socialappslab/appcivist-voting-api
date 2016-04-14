@@ -9,6 +9,7 @@ Rails.application.routes.draw do
 
         resources :vote, :only => [:create, :show, :update], :param => :signature do
           put :complete, :on => :member
+          put :single, :on => :member
         end
       end
     end
