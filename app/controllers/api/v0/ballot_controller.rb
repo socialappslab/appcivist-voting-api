@@ -120,7 +120,7 @@ class API::V0::BallotController < ApplicationController
     end
       
     render :json => {
-      :ballot  => {:uuid => @ballot.uuid, :finished => @ballot.finished?},
+      :ballot  => {:uuid => @ballot.uuid, :finished => @ballot.finished?, :candidates => @ballot.candidates},
       :results => results, 
       :index => indexedResults
     }, :status => 200 and return
