@@ -117,10 +117,17 @@ class API::V0::BallotController < ApplicationController
     for result in results
       indexedResults[result[:contribution_uuid]] = {:vote => result, :position => i}
       i += 1
+    end    
+    
+    candidatesIndex = Hash.new
+    i = 0
+    for candidate in @ballot.candidates
+      candidatesIndex[candidate[:contribution_uuid]] = i
+      i += 1
     end
       
     render :json => {
-      :ballot  => {:uuid => @ballot.uuid, :finished => @ballot.finished?, :candidates => @ballot.candidates},
+      :ballot  => {:uuid => @ballot.uuid, :finished => @ballot.finished?, :candidates => @ballot.candidates, :candidatesIndex => candidatesIndex},
       :results => results, 
       :index => indexedResults
     }, :status => 200 and return
