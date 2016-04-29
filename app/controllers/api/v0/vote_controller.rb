@@ -95,7 +95,7 @@ class API::V0::VoteController < ApplicationController
       render :json => {:error => "You need to enter your signature!"}, :status => 400 and return
     end
 
-    @ballot_paper = @ballot.ballot_papers.find_by_signature(params[:signature])
+    @ballot_paper = @ballot.ballot_papers.find_by_signature_and_ballot_id(params[:signature], @ballot.id)
     if @ballot_paper.blank?
       render :json => {:error => "There are no votes under this signature."}, :status => 400 and return
     end
@@ -122,7 +122,7 @@ class API::V0::VoteController < ApplicationController
       }
   EOS
   def update
-    @ballot_paper = @ballot.ballot_papers.find_by_signature(params[:signature])
+    @ballot_paper = @ballot.ballot_papers.find_by_signature_and_ballot_id(params[:signature], @ballot.id)
     if @ballot_paper.blank?
       render :json => {:error => "Ballot paper does not exist"}, :status => 404 and return
     end
@@ -157,7 +157,7 @@ class API::V0::VoteController < ApplicationController
   error 404, "Ballot paper does not exist"
   error 400, "Ballot paper could not be saved"
   def complete
-    @ballot_paper = @ballot.ballot_papers.find_by_signature(params[:signature])
+    @ballot_paper = @ballot.ballot_papers.find_by_signature_and_ballot_id(params[:signature],@ballot.id)
     if @ballot_paper.blank?
       render :json => {:error => "Ballot paper does not exist"}, :status => 404 and return
     end
@@ -211,7 +211,33 @@ class API::V0::VoteController < ApplicationController
     @vote.value = params[:value].presence
       
     if @vote.save
-      render :json => @vote.as_json(:root => true), :status => 200 and return
+      @ballot_paper = @ballot.ballot_papers.find_by_signature_and_ballot_id(params[:signature], @ballot.id)
+      candidatesIndex = Hash.new
+  
+      i = 0
+      for candidate in @ballot.candidates
+        candidatesIndex[candidate[:contribution_uuid]] = i
+        i += 1
+      end    
+
+      render :json => {
+        :ballot => {
+          :uuid => @ballot.uuid,
+          :voting_system_type => @ballot.voting_system_type,
+          :instructions => @ballot.instructions,
+          :notes => @ballot.notes,
+          :ballot_configurations => @ballot.ballot_configurations.as_json(:only => [:key, :value]),
+          :candidates => @ballot.candidates.as_json(),
+          :candidatesIndex => candidatesIndex
+        },
+        :vote => {
+          :uuid => @ballot_paper.uuid, 
+          :signature => @ballot_paper.signature, 
+          :status => @ballot_paper.status, 
+          :votes => @ballot_paper.votes.as_json(:only => [:candidate_id, :value, :value_type])
+        }
+      }, :status => 200 and return
+      
     else
       render :json => {:error => @vote.errors.full_messages[0]}, :status => 400 and return
     end
