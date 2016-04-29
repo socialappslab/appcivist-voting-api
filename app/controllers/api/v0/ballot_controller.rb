@@ -220,11 +220,11 @@ class API::V0::BallotController < ApplicationController
       # If we're expecting an integer, but it's a string, then let's throw an error.
       begin
         Float(user_input)
-        if matching_field[:expected_value].downcase == "string"
+        if matching_field[:expected_value] != nil && matching_field[:expected_value].downcase == "string"
           render :json => {:error => "User input does not match the expected type"}, :status => 400 and return
         end
       rescue
-        if matching_field[:expected_value].downcase == "integer"
+        if matching_field[:expected_value] != nil && matching_field[:expected_value].downcase == "integer"
           render :json => {:error => "User input does not match the expected type"}, :status => 400 and return
         end
       end
