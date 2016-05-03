@@ -231,7 +231,7 @@ class API::V0::VoteController < ApplicationController
           :candidatesIndex => candidatesIndex
         },
         :vote => {
-          :uuid => @ballot_paper.uuid, 
+          :uuid => @ballot_paper.uuid != nil ? nil : @ballot_paper.uuid, 
           :signature => @ballot_paper.signature, 
           :status => @ballot_paper.status, 
           :votes => @ballot_paper.votes.as_json(:only => [:candidate_id, :value, :value_type])
