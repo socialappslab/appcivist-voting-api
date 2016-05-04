@@ -228,6 +228,11 @@ class API::V0::BallotController < ApplicationController
           render :json => {:error => "User input does not match the expected type"}, :status => 400 and return
         end
       end
+      
+      # if matching field expected value is not null, compare it to the user input
+      if matching_field[:expected_value] != nil && matching_field[:expected_value] != user_input
+        render :json => {:error => "User input does not match the expected value on "+matching_field[:name]}, :status => 400 and return
+      end 
     end
 
     # Create a signature from the registration fields.
