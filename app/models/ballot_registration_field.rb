@@ -31,4 +31,10 @@ class BallotRegistrationField < ActiveRecord::Base
   def self.permitted_params
     [:name, :description, :expected_value, :user_input]
   end
+
+  before_save :default_values
+  def default_values
+    self.removed ||= false
+    true
+  end
 end
