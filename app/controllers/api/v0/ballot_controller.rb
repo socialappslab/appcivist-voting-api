@@ -33,7 +33,11 @@ class API::V0::BallotController < ApplicationController
   # Note: Although we want an array of hashes, current ApiPie implementation doesn't
   # support this: https://github.com/Apipie/apipie-rails/issues/364
   param_group :ballot_registration_fields
-  error 400, "Registration fields for ballot are missing"
+
+  param :candidates, Array, :required => false, :desc => "Ballot candidates" do
+    param :candidate_type, Integer, :desc => "Type of the candidates", :required => false
+    param :contribution_uuid, String, :desc => "UUID of the contribution", :required => false
+  end
   error 400, "Ballot#attribute is missing"
   example <<-EOS
     Sample request:
@@ -75,12 +79,35 @@ class API::V0::BallotController < ApplicationController
       end
     end
 
+    fields_candidates = []
+    if !candidates_fields_params[:candidates].nil?
+      candidates_fields_params[:candidates].each do |reg_field|
+        @candidate_field = Candidate.new(reg_field)
+        @candidate_field.validate
+
+        # Remove the empty ballot_id and check for errors.
+        validation_errors = @candidate_field.errors
+        validation_errors.delete(:ballot_id)
+        if validation_errors.present?
+          render :json => {:error => @candidate_field.errors.full_messages[0]}, :status => 400 and return
+        else
+          fields_candidates << @candidate_field
+        end
+      end
+    end
+
     # At this point, the ballot and all of the registration fields are valid. Let's save the ballot and
     # associate the ballot to each of the registration fields.
     @ballot.save!
     fields.each do |field|
       field.ballot_id = @ballot.id
       field.save!
+    end
+    if !fields_candidates.blank?
+      fields_candidates.each do |field_cand|
+        field_cand.ballot_id = @ballot.id
+        field_cand.save!
+      end
     end
 
     render :json => {}, :status => 200 and return
@@ -250,6 +277,10 @@ class API::V0::BallotController < ApplicationController
 
   def ballot_registration_fields_params
     params.permit(:ballot_registration_fields => BallotRegistrationField.permitted_params)
+  end
+
+  def candidates_fields_params
+    params.permit(:candidates => Candidate.permitted_params)
   end
 
 end

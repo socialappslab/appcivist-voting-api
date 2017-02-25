@@ -3,6 +3,10 @@ class Candidate < ActiveRecord::Base
   module Types
     EXTERNAL = 0
     ASSEMBLY = 1
+    CONTRIBUTION = 2
+    CAMPAIGN = 3
+    USER = 4
+    GROUP = 5
   end
 
   #----------------------------------------------------------------------------
@@ -24,6 +28,14 @@ class Candidate < ActiveRecord::Base
 
   #----------------------------------------------------------------------------
 
+  protected
+
+  def self.permitted_params
+    [:candidate_type, :contribution_uuid]
+  end
+
+  #----------------------------------------------------------------------------
+
   private
 
   # See: https://github.com/rails/rails/blob/master/activerecord/lib/active_record/secure_token.rb
@@ -31,5 +43,11 @@ class Candidate < ActiveRecord::Base
   def generate_uuid
     return if self.uuid?
     self.uuid = SecureRandom.uuid
+  end
+
+  before_save :default_values
+  def default_values
+    self.removed ||= false
+    true
   end
 end
