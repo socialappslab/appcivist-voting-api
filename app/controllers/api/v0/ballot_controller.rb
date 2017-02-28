@@ -25,7 +25,7 @@ class API::V0::BallotController < ApplicationController
     param :password, String, :desc => "Password for the ballot", :required => true
     param :instructions, String, :desc => "Instructions for the ballot", :required => true
     param :notes, String, :desc => "Notes about this ballot", :required => true
-    param :voting_system_type, Integer, :desc => "Type of voting system being used for this ballot", :required => true
+    param :voting_system_type, String, :desc => "Type of voting system being used for this ballot: RANGE, RANKED, DISTRIBUTED, PLURALITY, CONSENSUS", :required => true
     param :starts_at, String, :desc => "Time that this ballot starts (in YYYY-MM-DD HH:MM:SS format)", :required => true
     param :ends_at, String, :desc => "Time that this ballot ends (in YYYY-MM-DD HH:MM:SS format)", :required => true
   end
