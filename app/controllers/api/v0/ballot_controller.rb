@@ -45,7 +45,7 @@ class API::V0::BallotController < ApplicationController
       password: "abcdefg",
       instructions: "Fill out your first name",
       notes: "Notes about this ballot",
-      voting_system_type: 1,
+      voting_system_type: "RANGE",
       starts_at: "2016-01-01 12:00",
       ends_at: "2017-01-01 12:00"
     }
