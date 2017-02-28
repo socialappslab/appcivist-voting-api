@@ -5,7 +5,7 @@ class CreateBallots < ActiveRecord::Migration
       t.string   :password
       t.text     :instructions
       t.text     :notes
-      t.integer  :voting_system_type
+      t.string  :voting_system_type
       t.datetime :starts_at
       t.datetime :ends_at
 
