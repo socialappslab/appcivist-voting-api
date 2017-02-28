@@ -44,4 +44,10 @@ class BallotPaper < ActiveRecord::Base
     return if self.uuid?
     self.uuid = SecureRandom.uuid
   end
+
+  before_save :default_values
+  def default_values
+    self.removed ||= false
+    true
+  end
 end

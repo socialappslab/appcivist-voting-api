@@ -21,4 +21,10 @@ class Vote < ActiveRecord::Base
   def self.permitted_params
     [:value]
   end
+
+  before_save :default_values
+  def default_values
+    self.removed ||= false
+    true
+  end
 end

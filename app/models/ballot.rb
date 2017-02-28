@@ -55,4 +55,14 @@ class Ballot < ActiveRecord::Base
     return if self.uuid?
     self.uuid = SecureRandom.uuid
   end
+
+  before_save :default_values
+  def default_values
+    self.removed ||= false
+    self.status ||= 0;
+    self.require_registration ||= true;
+    self.user_uuid_as_signature ||= false;
+    self.decision_type ||= 'BINDING';
+    true
+  end
 end

@@ -7,4 +7,10 @@ class BallotConfiguration < ActiveRecord::Base
   validates :value,      :presence => true
 
   belongs_to :ballot
+  
+  before_save :default_values
+  def default_values
+    self.removed ||= false
+    true
+  end
 end
