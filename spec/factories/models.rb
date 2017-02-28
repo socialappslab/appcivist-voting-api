@@ -5,7 +5,7 @@ FactoryGirl.define do
     password "abcdefg"
     instructions "Ballot instructions"
     notes "Ballot notes"
-    voting_system_type 0
+    voting_system_type "RANGE"
     starts_at "2016-01-01 12:00:00"
     ends_at   "2017-01-01 12:00:00"
   end
