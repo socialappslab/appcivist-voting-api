@@ -36,7 +36,7 @@ class API::V0::BallotController < ApplicationController
 
   param :candidates, Array, :required => false, :desc => "Ballot candidates" do
     param :candidate_type, Integer, :desc => "Type of the candidates", :required => false
-    param :contribution_uuid, String, :desc => "UUID of the contribution", :required => false
+    param :candidate_uuid, String, :desc => "UUID of the contribution", :required => false
   end
   error 400, "Ballot#attribute is missing"
   example <<-EOS
@@ -142,14 +142,14 @@ class API::V0::BallotController < ApplicationController
 
     i = 0
     for result in results
-      indexedResults[result[:contribution_uuid]] = {:vote => result, :position => i}
+      indexedResults[result[:candidate_uuid]] = {:vote => result, :position => i}
       i += 1
     end    
     
     candidatesIndex = Hash.new
     i = 0
     for candidate in @ballot.candidates
-      candidatesIndex[candidate[:contribution_uuid]] = i
+      candidatesIndex[candidate[:candidate_uuid]] = i
       i += 1
     end
       
@@ -191,7 +191,7 @@ class API::V0::BallotController < ApplicationController
   EOS
   def registration_form
     render :json => {
-      :ballot => @ballot.as_json(:except => [:id, :created_at, :updated_at]),
+      :ballot => @ballot.as_json(:except => [:id, :created_at, :updated_at, :password]),
       :ballot_configurations => @ballot.ballot_configurations.as_json(:only => [:key, :value]),
       :ballot_registration_fields => @ballot.ballot_registration_fields.as_json(:except => [:ballot_id, :position])
     }, :status => 200 and return

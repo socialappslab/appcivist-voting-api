@@ -216,7 +216,7 @@ class API::V0::VoteController < ApplicationController
   
       i = 0
       for candidate in @ballot.candidates
-        candidatesIndex[candidate[:contribution_uuid]] = i
+        candidatesIndex[candidate[:candidate_uuid]] = i
         i += 1
       end    
 

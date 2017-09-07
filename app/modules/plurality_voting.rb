@@ -36,7 +36,7 @@ module PluralityVoting
 
   def self.identify_contribution(candidate_id)
     candidate = Candidate.find_by_id(candidate_id)
-    return candidate.contribution_uuid
+    return candidate.candidate_uuid
   end
     
   # This method sorts the candidates from highest to lowest score.
@@ -48,7 +48,7 @@ module PluralityVoting
       matching_candidate = candidate_votes.find {|cv| cv[:candidate_id] == vote.candidate_id}
       matching_contribution = PluralityVoting.identify_contribution(vote.candidate_id)
       if matching_candidate.blank?
-        candidate_votes << {:candidate_id => vote.candidate_id, :values => [vote.value], :contribution_uuid => matching_contribution}
+        candidate_votes << {:candidate_id => vote.candidate_id, :values => [vote.value], :candidate_uuid => matching_contribution}
       else
         matching_candidate[:values] << vote.value
       end

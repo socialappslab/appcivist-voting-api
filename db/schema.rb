@@ -58,7 +58,7 @@ ActiveRecord::Schema.define(version: 20160109010837) do
     t.integer  "ballot_id"
     t.string   "uuid"
     t.integer  "candidate_type"
-    t.uuid     "contribution_uuid"
+    t.uuid     "candidate_uuid"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

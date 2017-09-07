@@ -4,7 +4,7 @@ class CreateCandidates < ActiveRecord::Migration
       t.integer :ballot_id
       t.string  :uuid, :unique => true
       t.integer :candidate_type
-      t.uuid    :contribution_uuid
+      t.uuid    :candidate_uuid
 
       t.timestamps
     end

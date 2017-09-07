@@ -14,7 +14,7 @@ class Candidate < ActiveRecord::Base
   #------------
   validates :ballot_id,         :presence => true
   validates :candidate_type,    :presence => true
-  validates :contribution_uuid, :presence => true
+  validates :candidate_uuid, :presence => true
 
   #----------------------------------------------------------------------------
   # Associations
@@ -31,7 +31,7 @@ class Candidate < ActiveRecord::Base
   protected
 
   def self.permitted_params
-    [:candidate_type, :contribution_uuid]
+    [:candidate_type, :candidate_uuid]
   end
 
   #----------------------------------------------------------------------------

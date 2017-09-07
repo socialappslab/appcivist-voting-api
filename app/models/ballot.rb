@@ -8,6 +8,8 @@ class Ballot < ActiveRecord::Base
   validates :voting_system_type, :presence => true
   validates :starts_at, :presence => true
   validates :ends_at,   :presence => true
+  validates :votes_limit,   :presence => true
+  validates :votes_limit_meaning,   :presence => true
 
   module VotingTypes
     RANGE = "range"
@@ -42,7 +44,7 @@ class Ballot < ActiveRecord::Base
   protected
 
   def self.permitted_params
-    [:instructions, :password, :notes, :voting_system_type, :starts_at, :ends_at]
+    [:instructions, :password, :notes, :voting_system_type, :starts_at, :ends_at, :votes_limit, :votes_limit_meaning]
   end
 
   #----------------------------------------------------------------------------
@@ -63,6 +65,8 @@ class Ballot < ActiveRecord::Base
     self.require_registration ||= true;
     self.user_uuid_as_signature ||= false;
     self.decision_type ||= 'BINDING';
+    self.votes_limit ||= '5'
+    self.votes_limit_meaning ||= 'SELECTIONS'
     true
   end
 end

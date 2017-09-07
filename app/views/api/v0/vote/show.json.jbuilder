@@ -1,11 +1,11 @@
 json.ballot do
-  json.(@ballot, :uuid, :voting_system_type, :instructions, :notes)
+  json.(@ballot, :uuid, :voting_system_type, :instructions, :notes, :votes_limit, :votes_limit_meaning)
   json.ballot_configurations @ballot.ballot_configurations
   json.candidates @ballot.candidates
   i = 0
   json.candidatesIndex do 
     @ballot.candidates.each { |candidate|
-      json.set!(candidate.contribution_uuid,i)
+      json.set!(candidate.candidate_uuid,i)
       i = i + 1
     }
   end
