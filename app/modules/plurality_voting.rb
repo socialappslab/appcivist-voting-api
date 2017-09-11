@@ -34,7 +34,7 @@ module PluralityVoting
     return score
   end
 
-  def self.identify_contribution(candidate_id)
+  def self.identify_candidate(candidate_id)
     candidate = Candidate.find_by_id(candidate_id)
     return candidate.candidate_uuid
   end
@@ -46,9 +46,9 @@ module PluralityVoting
       next if vote.value.blank?
 
       matching_candidate = candidate_votes.find {|cv| cv[:candidate_id] == vote.candidate_id}
-      matching_contribution = PluralityVoting.identify_contribution(vote.candidate_id)
+      matching_candidate_uuid = PluralityVoting.identify_candidate(vote.candidate_id)
       if matching_candidate.blank?
-        candidate_votes << {:candidate_id => vote.candidate_id, :values => [vote.value], :candidate_uuid => matching_contribution}
+        candidate_votes << {:candidate_id => vote.candidate_id, :values => [vote.value], :candidate_uuid => matching_candidate_uuid}
       else
         matching_candidate[:values] << vote.value
       end

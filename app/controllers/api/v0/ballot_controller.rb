@@ -135,9 +135,15 @@ class API::V0::BallotController < ApplicationController
   EOS
   def results
     results = []
-    results = @ballot.voting_system_type == "PLURALITY" ?    
-      PluralityVoting.sort_candidates_by_score(@ballot.votes) : 
-      RangeVoting.sort_candidates_by_score(@ballot.votes)
+    case @ballot.voting_system_type
+    when "PLURALITY", "APPROVAL"
+      results =  PluralityVoting.sort_candidates_by_score(@ballot.votes)
+    when "RANGE"
+      results =  PluralityVoting.sort_candidates_by_score(@ballot.votes)
+    when "DISTRIBUTED", "CUMULATIVE"
+      results =  CumulativeVoting.sort_candidates_by_score(@ballot.votes)
+    end
+      
     indexedResults = Hash.new
 
     i = 0

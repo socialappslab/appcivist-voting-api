@@ -50,4 +50,9 @@ class BallotPaper < ActiveRecord::Base
     self.removed ||= false
     true
   end
+  # TODO: allow saving votes only if all votes are valid according to the rules of the voting system type of the ballot
+  #def check_valid_votes
+    # logic => if Range, assure votes are in range; if DISTRIBUTED, ensure that the votes don't go over the limit of votes, etc. 
+  #  true
+  #end
 end
