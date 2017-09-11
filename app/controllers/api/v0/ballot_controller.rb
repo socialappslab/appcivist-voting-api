@@ -263,6 +263,7 @@ class API::V0::BallotController < ApplicationController
     end
 
     # Create a signature from the registration fields.
+    # TODO: store the signature for later checking
     signature = BallotRegistrationField.generate_signature_from_params(ballot_registration_fields_params[:ballot_registration_fields])
     render :json => {:password => @ballot.password, :signature => signature}, :status => 200 and return
   end

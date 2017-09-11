@@ -38,6 +38,13 @@ class Ballot < ActiveRecord::Base
   def finished?
     self.ballot_papers.where(:status => BallotPaper::Status::DRAFT).count == 0
   end
+  
+  # Checks if the password is the correct password
+  # TODO: encrypt password
+  def check_password(passwd)
+    # self.password == BCrypt::Password.new(passwd)
+    self.password == passwd
+  end
 
   #----------------------------------------------------------------------------
 

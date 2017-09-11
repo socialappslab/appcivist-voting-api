@@ -21,13 +21,15 @@ class API::V0::VoteController < ApplicationController
   # on why we're using error code 409
   error 409, "Ballot with that signature already exists"
   param :vote, Hash, :required => true, :desc => "Vote hash containing the value" do
-    param :signature, String, :desc => "Signature corresponding to the voter", :required => true
+    param :signature, String, :desc => "Signature corresponding to the voter (obtained via registration)", :required => true
+  param :password, String, :desc => "Password of the ballot", :required => true
   end
   example <<-EOS
     Sample request: {
       vote: {
-        signature: b8da40901dbee9cd067057516a6470b64eebd348
-      }
+        signature: b8da40901dbee9cd067057516a6470b64eebd348,
+      },
+      password: 12345
     }
     Sample response: {
       vote : {
@@ -38,22 +40,27 @@ class API::V0::VoteController < ApplicationController
     }
   EOS
   def create
+    #  TODO: allow only signatures generated after registration, or coming from AppCivist, or coming via OAUTH auth
     ballot_paper = BallotPaper.find_by_signature_and_ballot_id(ballot_paper_params[:signature], @ballot.id)
     if ballot_paper.present?
       render :json => {:error => "Ballot with that signature already exists"}, :status => 409 and return
     end
 
-    # Create a ballot paper based on the provided signature.
     puts @ballot.id
-    
-    ballot_paper           = BallotPaper.new
-    ballot_paper.ballot    = @ballot
-    ballot_paper.signature = ballot_paper_params[:signature]
-    ballot_paper.status    = BallotPaper::Status::DRAFT
-    if ballot_paper.save
-      render :json => {:vote => ballot_paper.as_json(:only => [:uuid, :signature, :status])}, :status => 200 and return
-    else
-      render :json => {:error => ballot_paper.errors.full_messages[0]}, :status => 400 and return
+      
+    if @ballot.check_password(params[:password])    
+      # Create a ballot paper based on the provided signature.
+      ballot_paper           = BallotPaper.new
+      ballot_paper.ballot    = @ballot
+      ballot_paper.signature = ballot_paper_params[:signature]
+      ballot_paper.status    = BallotPaper::Status::DRAFT
+      if ballot_paper.save
+        render :json => {:vote => ballot_paper.as_json(:only => [:uuid, :signature, :status])}, :status => 200 and return
+      else
+        render :json => {:error => ballot_paper.errors.full_messages[0]}, :status => 400 and return
+      end
+    else 
+      render :json => {:error => "Wrong password"}, :status => 400 and return
     end
   end
 
