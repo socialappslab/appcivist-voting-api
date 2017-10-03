@@ -1,5 +1,5 @@
 json.ballot do
-  json.(@ballot, :uuid, :voting_system_type, :instructions, :notes, :votes_limit, :votes_limit_meaning)
+  json.(@ballot, :uuid, :voting_system_type, :instructions, :notes, :votes_limit, :votes_limit_meaning, :entity_type, :status, :user_uuid_as_signature)
   json.ballot_configurations @ballot.ballot_configurations
   json.candidates @ballot.candidates
   i = 0
