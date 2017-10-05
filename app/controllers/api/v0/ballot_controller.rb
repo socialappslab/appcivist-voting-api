@@ -197,7 +197,8 @@ class API::V0::BallotController < ApplicationController
   EOS
   def registration_form
     render :json => {
-      :ballot => @ballot.as_json(:except => [:id, :created_at, :updated_at, :password]),
+      :ballot => @ballot.as_json(:except => [:id, :created_at, :updated_at, :password, :entity_type])
+                     .merge(:candidatesNumber => @ballot.candidates.count, :entityType => @ballot.entity_type),
       :ballot_configurations => @ballot.ballot_configurations.as_json(:only => [:key, :value]),
       :ballot_registration_fields => @ballot.ballot_registration_fields.as_json(:except => [:ballot_id, :position])
     }, :status => 200 and return
