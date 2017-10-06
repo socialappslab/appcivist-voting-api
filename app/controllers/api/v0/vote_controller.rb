@@ -149,7 +149,7 @@ class API::V0::VoteController < ApplicationController
     end
 
     if @ballot_paper.update_attributes(ballot_paper_params)
-      render :json => @ballot_paper.as_json(:root => true, :only => [:signature, :status]), :status => 200 and return
+      render :show, :status => 200 and return
     else
       render :json => {:error => @ballot_paper.errors.full_messages[0]}, :status => 400 and return
     end
@@ -171,7 +171,7 @@ class API::V0::VoteController < ApplicationController
 
     @ballot_paper.status = BallotPaper::Status::FINISHED
     if @ballot_paper.update_attributes(ballot_paper_params)
-      render :json => @ballot_paper.as_json(:root => true, :only => [:signature, :status]), :status => 200 and return
+      render :show, :status => 200 and return
     else
       render :json => {:error => @ballot_paper.errors.full_messages[0]}, :status => 400 and return
     end
@@ -219,32 +219,7 @@ class API::V0::VoteController < ApplicationController
       
     if @vote.save
       @ballot_paper = @ballot.ballot_papers.find_by_signature_and_ballot_id(params[:signature], @ballot.id)
-      candidatesIndex = Hash.new
-  
-      i = 0
-      for candidate in @ballot.candidates
-        candidatesIndex[candidate[:candidate_uuid]] = i
-        i += 1
-      end    
-
-      render :json => {
-        :ballot => {
-          :uuid => @ballot.uuid,
-          :voting_system_type => @ballot.voting_system_type,
-          :instructions => @ballot.instructions,
-          :notes => @ballot.notes,
-          :ballot_configurations => @ballot.ballot_configurations.as_json(:only => [:key, :value]),
-          :candidates => @ballot.candidates.as_json(),
-          :candidatesIndex => candidatesIndex
-        },
-        :vote => {
-          :uuid => @ballot_paper.uuid != nil ? nil : @ballot_paper.uuid, 
-          :signature => @ballot_paper.signature, 
-          :status => @ballot_paper.status, 
-          :votes => @ballot_paper.votes.as_json(:only => [:candidate_id, :value, :value_type])
-        }
-      }, :status => 200 and return
-      
+      render :show, :status => 200 and return
     else
       render :json => {:error => @vote.errors.full_messages[0]}, :status => 400 and return
     end
