@@ -6,7 +6,7 @@ gem 'foreman' # Process manager for applications with multiple components
 gem 'jbuilder', '~> 2.0' # Build JSON APIs with ease.
 gem 'pg'
 gem 'puma' # Concurrent ruby web server
-gem 'rails', '4.2.5'
+gem 'rails', '4.2.7.1'
 gem 'rails-api'
 gem 'rack-cors', :require => 'rack/cors'
 gem 'sass-rails', '~> 5.0' # Use SCSS for stylesheets
