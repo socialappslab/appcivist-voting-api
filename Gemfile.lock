@@ -85,7 +85,7 @@ GEM
     nokogiri (1.10.5)
       mini_portile2 (~> 2.4.0)
     pg (0.21.0)
-    puma (2.15.3)
+    puma (3.12.6)
     rack (1.6.11)
     rack-cors (1.0.5)
       rack (>= 1.6.0)
